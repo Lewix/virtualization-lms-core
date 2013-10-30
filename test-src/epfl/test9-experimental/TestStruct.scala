@@ -54,7 +54,7 @@ trait StructExpOptLoops extends StructExpOptCommon with ArrayLoopsExp {
           if (m.erasure.isArray) mtype(Manifest.classType(m.erasure.getComponentType))
           else { printerr("warning: expect type Array[A] but got "+m); mtype(manifest[Any]) }
       }
-      struct[T](tag.asInstanceOf[StructTag[T]], elems.map(p=>(p._1,infix_at(p._2, i)(unwrap(p._2.tp)))))
+      struct[T](tag.asInstanceOf[StructTag[T]], elems.toSeq.map(p=>(p._1,infix_at(p._2, i)(unwrap(p._2.tp)))))
     case _ => super.infix_at(a,i)
   }
   
