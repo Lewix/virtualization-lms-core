@@ -453,7 +453,6 @@ trait CGenStruct extends CGenBase with BaseGenStruct{
   }
 
   override def emitDataStructures(stream: PrintWriter) {
-    println(raw"/* Emitting data structures for structs $encounteredStructs */")
     for ((name, elems) <- encounteredStructs) {
       stream.println()
       stream.println("typedef struct{")

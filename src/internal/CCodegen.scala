@@ -125,7 +125,6 @@ trait CCodegen extends CLikeCodegen {
                      "#include <stdbool.h>"
       )
 
-
       // TODO: static data
 
       //stream.println("class "+className+(if (staticData.isEmpty) "" else "("+staticData.map(p=>"p"+quote(p._1)+":"+p._1.tp).mkString(",")+")")+" 

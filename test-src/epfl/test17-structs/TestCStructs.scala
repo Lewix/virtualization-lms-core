@@ -34,6 +34,7 @@ class TestCStructs extends FileDiffSuite {
         stream.println("/* FILE: " + x.name + ".c */")
         for ((_,v) <- rec) codegen.emitForwardDef(mtype(v.mA)::Nil, v.name, stream)(mtype(v.mB))
         codegen.emitSource(x.f, x.name, stream)(mtype(x.mA), mtype(x.mB))
+        codegen.emitDataStructures(stream)
       }
     }
     emitAll()
@@ -45,8 +46,7 @@ class TestCStructs extends FileDiffSuite {
       trait Prog extends DSL {
         toplevel("main") { x: Rep[Int] =>
 
-          var t = (1,2)
-
+          var t = make_tuple2((unit(1), unit(2)))
           0
         }
       }
