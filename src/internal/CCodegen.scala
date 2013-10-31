@@ -115,34 +115,42 @@ trait CCodegen extends CLikeCodegen {
   def emitSource[A:Manifest](args: List[Sym[_]], body: Block[A], functionName: String, out: PrintWriter) = {
 
     val sA = remap(manifest[A])
-
-    withStream(out) {
-      stream.println("/*****************************************\n"+
-                     "  Emitting C Generated Code                  \n"+
-                     "*******************************************/\n" +
-                     "#include <stdio.h>\n" +
-                     "#include <stdlib.h>\n" +
-                     "#include <stdbool.h>"
-      )
+    val argStrings = args.map(a => src"${a.tp} $a")
+    val strWriter = new java.io.StringWriter
+    val sourceStream = new PrintWriter(strWriter)
 
       // TODO: static data
-
       //stream.println("class "+className+(if (staticData.isEmpty) "" else "("+staticData.map(p=>"p"+quote(p._1)+":"+p._1.tp).mkString(",")+")")+" 
       //extends (("+args.map(a => remap(a.tp)).mkString(", ")+")=>("+sA+")) {")
 
-      stream.println(sA+" "+functionName+"("+args.map(a => remap(a.tp)+" "+quote(a)).mkString(", ")+") {")
-
+    // Emit source before data strucures to populate encounteredStructs
+    withStream(sourceStream) {
+      gen"$sA $functionName($argStrings) {"
       emitBlock(body)
-
       val y = getBlockResult(body)
       if (remap(y.tp) != "void")
-        stream.println("return " + quote(y) + ";")
-
-      stream.println("}")
-      stream.println("/*****************************************\n"+
-                     "  End of C Generated Code                  \n"+
-                     "*******************************************/")
+        gen"return $y;"
+      gen"}"
     }
+
+    withStream(out) {
+      gen"""/*****************************************
+           |  Emitting C Generated Code                  
+           |*******************************************/
+           |#include <stdio.h>
+           |#include <stdlib.h>
+           |#include <stdbool.h>"""
+
+      emitDataStructures(stream)
+      stream.println(strWriter.toString)
+
+      gen"""/*****************************************
+           |  End of C Generated Code                  
+           |*******************************************/"""
+    }
+    strWriter.close()
+    sourceStream.close()
+
     Nil
   }  
 
