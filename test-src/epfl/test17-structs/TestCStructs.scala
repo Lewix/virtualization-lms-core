@@ -39,19 +39,28 @@ class TestCStructs extends FileDiffSuite {
     emitAll()
   }
 
-  
-  def testCTuples = {
-    withOutFile(prefix+"ctuples") {
+  def testCTuplesCreation = {
+    withOutFile(prefix+"ctuples1") {
       trait Prog extends DSL {
         toplevel("main") { x: Rep[Int] =>
-
-          var t = make_tuple2((unit(1), unit(2)))
-          0
+          make_tuple2((x, x+1))
         }
       }
       new Prog with Impl
     }
-    assertFileEqualsCheck(prefix+"ctuples")
+    assertFileEqualsCheck(prefix+"ctuples1")
+  }
+  
+  def testCTuplesAccess = {
+    withOutFile(prefix+"ctuples2") {
+      trait Prog extends DSL {
+        toplevel("main") { x: Rep[(Int,Int)] =>
+          x._1 + x._2
+        }
+      }
+      new Prog with Impl
+    }
+    assertFileEqualsCheck(prefix+"ctuples2")
   }
 }
 

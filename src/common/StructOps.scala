@@ -181,8 +181,9 @@ case _ => super.fresh
     case _ => super.object_tostring(x)
   }
 
-  def registerStruct[T](name: String, elems: Seq[(String, Rep[Any])]) {
-    encounteredStructs += name -> elems.map(e => (e._1, e._2.tp))
+  def registerStruct[T](name: String, elems: Seq[(String, Rep[Any])]) = registerStructType(name, elems.map(e => (e._1, e._2.tp)))
+  def registerStructType[T](name: String, elems: Seq[(String, Manifest[_])]) {
+    encounteredStructs += name -> elems
   }
   val encounteredStructs = new scala.collection.mutable.HashMap[String, Seq[(String, Manifest[_])]]
 }

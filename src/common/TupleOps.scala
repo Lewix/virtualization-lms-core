@@ -12,6 +12,8 @@ import java.io.PrintWriter
  */
 
 trait TupleOps extends Base {
+  val tuple_elems: Seq[String]
+
   implicit def make_tuple2[A:Manifest,B:Manifest](t: (Rep[A], Rep[B]))(implicit pos: SourceContext) : Rep[(A,B)]
   implicit def make_tuple3[A:Manifest,B:Manifest,C:Manifest](t: (Rep[A], Rep[B], Rep[C]))(implicit pos: SourceContext) : Rep[(A,B,C)]
   implicit def make_tuple4[A:Manifest,B:Manifest,C:Manifest,D:Manifest](t: (Rep[A], Rep[B], Rep[C], Rep[D]))(implicit pos: SourceContext) : Rep[(A,B,C,D)]
@@ -69,10 +71,12 @@ trait TupleOpsExp extends TupleOps with StructExpOpt {
     val m5 = manifest[E]
   }
 
-  implicit def make_tuple2[A:Manifest,B:Manifest](t: (Exp[A],Exp[B]))(implicit pos: SourceContext) : Exp[(A,B)] = struct(classTag[(A,B)], "_1" -> t._1, "_2" -> t._2)
-  implicit def make_tuple3[A:Manifest,B:Manifest,C:Manifest](t: (Exp[A],Exp[B],Exp[C]))(implicit pos: SourceContext) : Exp[(A,B,C)] = struct(classTag[(A,B,C)], "_1" -> t._1, "_2" -> t._2, "_3" -> t._3)
-  implicit def make_tuple4[A:Manifest,B:Manifest,C:Manifest,D:Manifest](t: (Exp[A],Exp[B],Exp[C],Exp[D]))(implicit pos: SourceContext) : Exp[(A,B,C,D)] = struct(classTag[(A,B,C,D)], "_1" -> t._1, "_2" -> t._2, "_3" -> t._3, "_4" -> t._4)
-  implicit def make_tuple5[A:Manifest,B:Manifest,C:Manifest,D:Manifest,E:Manifest](t: (Exp[A],Exp[B],Exp[C],Exp[D],Exp[E]))(implicit pos: SourceContext) : Exp[(A,B,C,D,E)] = struct(classTag[(A,B,C,D,E)], "_1" -> t._1, "_2" -> t._2, "_3" -> t._3, "_4" -> t._4, "_5" -> t._5)
+  val tuple_elems: Seq[String] = List("_1", "_2", "_3", "_4", "_5")
+
+  implicit def make_tuple2[A:Manifest,B:Manifest](t: (Exp[A],Exp[B]))(implicit pos: SourceContext) : Exp[(A,B)] = struct(classTag[(A,B)], tuple_elems(1) -> t._1, tuple_elems(2) -> t._2)
+  implicit def make_tuple3[A:Manifest,B:Manifest,C:Manifest](t: (Exp[A],Exp[B],Exp[C]))(implicit pos: SourceContext) : Exp[(A,B,C)] = struct(classTag[(A,B,C)], tuple_elems(1) -> t._1, tuple_elems(2) -> t._2, tuple_elems(3) -> t._3)
+  implicit def make_tuple4[A:Manifest,B:Manifest,C:Manifest,D:Manifest](t: (Exp[A],Exp[B],Exp[C],Exp[D]))(implicit pos: SourceContext) : Exp[(A,B,C,D)] = struct(classTag[(A,B,C,D)], tuple_elems(1) -> t._1, tuple_elems(2) -> t._2, tuple_elems(3) -> t._3, tuple_elems(4) -> t._4)
+  implicit def make_tuple5[A:Manifest,B:Manifest,C:Manifest,D:Manifest,E:Manifest](t: (Exp[A],Exp[B],Exp[C],Exp[D],Exp[E]))(implicit pos: SourceContext) : Exp[(A,B,C,D,E)] = struct(classTag[(A,B,C,D,E)], tuple_elems(1) -> t._1, tuple_elems(2) -> t._2, tuple_elems(3) -> t._3, tuple_elems(4) -> t._4, tuple_elems(5) -> t._5)
 
   case class Tuple2Access1[A:Manifest](t: Exp[(A,_)]) extends Def[A] { val m = manifest[A] }
   case class Tuple2Access2[B:Manifest](t: Exp[(_,B)]) extends Def[B] { val m = manifest[B] }
@@ -89,23 +93,23 @@ trait TupleOpsExp extends TupleOps with StructExpOpt {
   case class Tuple5Access4[D:Manifest](t: Exp[(_,_,_,D,_)]) extends Def[D] { val m = manifest[D] }
   case class Tuple5Access5[E:Manifest](t: Exp[(_,_,_,_,E)]) extends Def[E] { val m = manifest[E] }
 
-  def tuple2_get1[A:Manifest](t: Exp[(A,_)])(implicit pos: SourceContext) = field[A](t, "_1")
-  def tuple2_get2[B:Manifest](t: Exp[(_,B)])(implicit pos: SourceContext) = field[B](t, "_2")
+  def tuple2_get1[A:Manifest](t: Exp[(A,_)])(implicit pos: SourceContext) = field[A](t, tuple_elems(1))
+  def tuple2_get2[B:Manifest](t: Exp[(_,B)])(implicit pos: SourceContext) = field[B](t, tuple_elems(2))
 
-  def tuple3_get1[A:Manifest](t: Exp[(A,_,_)])(implicit pos: SourceContext) = field[A](t, "_1")
-  def tuple3_get2[B:Manifest](t: Exp[(_,B,_)])(implicit pos: SourceContext) = field[B](t, "_2")
-  def tuple3_get3[C:Manifest](t: Exp[(_,_,C)])(implicit pos: SourceContext) = field[C](t, "_3")
+  def tuple3_get1[A:Manifest](t: Exp[(A,_,_)])(implicit pos: SourceContext) = field[A](t, tuple_elems(1))
+  def tuple3_get2[B:Manifest](t: Exp[(_,B,_)])(implicit pos: SourceContext) = field[B](t, tuple_elems(2))
+  def tuple3_get3[C:Manifest](t: Exp[(_,_,C)])(implicit pos: SourceContext) = field[C](t, tuple_elems(3))
 
-  def tuple4_get1[A:Manifest](t: Exp[(A,_,_,_)])(implicit pos: SourceContext) = field[A](t, "_1")
-  def tuple4_get2[B:Manifest](t: Exp[(_,B,_,_)])(implicit pos: SourceContext) = field[B](t, "_2")
-  def tuple4_get3[C:Manifest](t: Exp[(_,_,C,_)])(implicit pos: SourceContext) = field[C](t, "_3")
-  def tuple4_get4[D:Manifest](t: Exp[(_,_,_,D)])(implicit pos: SourceContext) = field[D](t, "_4")
+  def tuple4_get1[A:Manifest](t: Exp[(A,_,_,_)])(implicit pos: SourceContext) = field[A](t, tuple_elems(1))
+  def tuple4_get2[B:Manifest](t: Exp[(_,B,_,_)])(implicit pos: SourceContext) = field[B](t, tuple_elems(2))
+  def tuple4_get3[C:Manifest](t: Exp[(_,_,C,_)])(implicit pos: SourceContext) = field[C](t, tuple_elems(3))
+  def tuple4_get4[D:Manifest](t: Exp[(_,_,_,D)])(implicit pos: SourceContext) = field[D](t, tuple_elems(4))
 
-  def tuple5_get1[A:Manifest](t: Exp[(A,_,_,_,_)])(implicit pos: SourceContext) = field[A](t, "_1")
-  def tuple5_get2[B:Manifest](t: Exp[(_,B,_,_,_)])(implicit pos: SourceContext) = field[B](t, "_2")
-  def tuple5_get3[C:Manifest](t: Exp[(_,_,C,_,_)])(implicit pos: SourceContext) = field[C](t, "_3")
-  def tuple5_get4[D:Manifest](t: Exp[(_,_,_,D,_)])(implicit pos: SourceContext) = field[D](t, "_4")
-  def tuple5_get5[E:Manifest](t: Exp[(_,_,_,_,E)])(implicit pos: SourceContext) = field[E](t, "_5")
+  def tuple5_get1[A:Manifest](t: Exp[(A,_,_,_,_)])(implicit pos: SourceContext) = field[A](t, tuple_elems(1))
+  def tuple5_get2[B:Manifest](t: Exp[(_,B,_,_,_)])(implicit pos: SourceContext) = field[B](t, tuple_elems(2))
+  def tuple5_get3[C:Manifest](t: Exp[(_,_,C,_,_)])(implicit pos: SourceContext) = field[C](t, tuple_elems(3))
+  def tuple5_get4[D:Manifest](t: Exp[(_,_,_,D,_)])(implicit pos: SourceContext) = field[D](t, tuple_elems(4))
+  def tuple5_get5[E:Manifest](t: Exp[(_,_,_,_,E)])(implicit pos: SourceContext) = field[E](t, tuple_elems(5))
 
   object Both { def unapply[T](x:T):Some[(T,T)] = Some((x,x)) }
 }
@@ -113,11 +117,23 @@ trait TupleOpsExp extends TupleOps with StructExpOpt {
 trait TupleGenBase extends GenericCodegen with BaseGenStruct {
   val IR: TupleOpsExp
 
-  override def remap[A](m: Manifest[A]) = m.erasure.getSimpleName match {
-    case "Tuple2" => IR.structName(m)
-    case "Tuple3" => IR.structName(m)
-    case "Tuple4" => IR.structName(m)
-    case "Tuple5" => IR.structName(m)
+  override def remap[A](m: Manifest[A]) = m.runtimeClass.getSimpleName match {
+    case "Tuple2" =>
+      val elems = IR.tuple_elems.take(2) zip m.typeArguments
+      IR.registerStructType(IR.structName(m), elems)
+      IR.structName(m)
+    case "Tuple3" =>
+      val elems = IR.tuple_elems.take(3) zip m.typeArguments
+      IR.registerStructType(IR.structName(m), elems)
+      IR.structName(m)
+    case "Tuple4" =>
+      val elems = IR.tuple_elems.take(4) zip m.typeArguments
+      IR.registerStructType(IR.structName(m), elems)
+      IR.structName(m)
+    case "Tuple5" =>
+      val elems = IR.tuple_elems.take(5) zip m.typeArguments
+      IR.registerStructType(IR.structName(m), elems)
+      IR.structName(m)
     case _ => super.remap(m)
   }
 }
