@@ -24,7 +24,6 @@ trait AbstractTransformer {
   def apply[X,Y,A](f: (X,Y)=>Exp[A]): (X,Y)=>Exp[A] = (z1:X,z2:Y) => apply(f(z1,z2))
   //def apply[A](xs: Summary): Summary = xs //TODO
   def onlySyms[A](xs: List[Sym[A]]): List[Sym[A]] = xs map (e => apply(e)) collect { case e: Sym[A] => e }
-  
 }
 
 trait AbstractSubstTransformer extends AbstractTransformer {

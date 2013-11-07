@@ -5,7 +5,8 @@ import java.io.{FileWriter, StringWriter, PrintWriter, File}
 import java.util.ArrayList
 import collection.mutable.{ListBuffer, ArrayBuffer, LinkedList, HashMap, ListMap, HashSet, Map => MMap}
 import collection.immutable.List._
-
+import scala.virtualization.lms.common.WorklistTransformer
+import scala.virtualization.lms.common.{IfThenElse,Loops}
 
 trait CCodegen extends CLikeCodegen {
   val IR: Expressions
@@ -108,12 +109,14 @@ trait CCodegen extends CLikeCodegen {
     }
   }
 
+  def runTransformations[A:Manifest](body: Block[A]): Block[A] = body
+
   def emitForwardDef[A:Manifest](args: List[Manifest[_]], functionName: String, out: PrintWriter) = {
     out.println(remap(manifest[A])+" "+functionName+"("+args.map(a => remap(a)).mkString(", ")+");")
   }
       
-  def emitSource[A:Manifest](args: List[Sym[_]], body: Block[A], functionName: String, out: PrintWriter) = {
-
+  def emitSource[A:Manifest](args: List[Sym[_]], b: Block[A], functionName: String, out: PrintWriter) = {
+    val body = runTransformations(b)
     val sA = remap(manifest[A])
     val argStrings = args.map(a => src"${a.tp} $a")
     val strWriter = new java.io.StringWriter
@@ -338,7 +341,17 @@ trait CCodegen extends CLikeCodegen {
 trait CNestedCodegen extends GenericNestedCodegen with CCodegen {
   val IR: Expressions with Effects
   import IR._
-  
+
+  var transformers: List[WorklistTransformer{val IR: CNestedCodegen.this.IR.type}] = Nil
+
+  override def runTransformations[A:Manifest](body: Block[A]): Block[A] = {
+    //CCodegenLowering.run(body)
+    var b = body
+    for (t <- transformers) {
+      b = t.run(b)
+    }
+    b
+  }
 }
 
 trait CFatCodegen extends GenericFatCodegen with CCodegen {
