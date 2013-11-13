@@ -6,7 +6,8 @@ import java.util.ArrayList
 import collection.mutable.{ListBuffer, ArrayBuffer, LinkedList, HashMap, ListMap, HashSet, Map => MMap}
 import collection.immutable.List._
 import scala.virtualization.lms.common.WorklistTransformer
-import scala.virtualization.lms.common.{IfThenElse,Loops}
+import scala.virtualization.lms.common.LoweringTransform
+
 
 trait CCodegen extends CLikeCodegen {
   val IR: Expressions
@@ -339,18 +340,11 @@ trait CCodegen extends CLikeCodegen {
 
 // TODO: do we need this for each target?
 trait CNestedCodegen extends GenericNestedCodegen with CCodegen {
-  val IR: Expressions with Effects
+  val IR: Expressions with Effects with LoweringTransform
   import IR._
 
-  var transformers: List[WorklistTransformer{val IR: CNestedCodegen.this.IR.type}] = Nil
-
   override def runTransformations[A:Manifest](body: Block[A]): Block[A] = {
-    //CCodegenLowering.run(body)
-    var b = body
-    for (t <- transformers) {
-      b = t.run(b)
-    }
-    b
+    CCodegenLowering.run(body)
   }
 }
 

@@ -107,5 +107,8 @@ trait CLikeGenArrayBufferOps extends BaseGenArrayBufferOps with CLikeGenBase {
 
 trait CudaGenArrayBufferOps extends CudaGenEffect with CLikeGenArrayBufferOps
 trait OpenCLGenArrayBufferOps extends OpenCLGenEffect with CLikeGenArrayBufferOps
-trait CGenArrayBufferOps extends CGenEffect with CLikeGenArrayBufferOps
+trait CGenArrayBufferOps extends CGenEffect with CLikeGenArrayBufferOps {
+  val IR: ArrayBufferOpsExp with LoweringTransform
+  import IR._
+}
 

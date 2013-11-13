@@ -222,7 +222,7 @@ trait OpenCLGenMathOps extends BaseGenMathOps with OpenCLGenEffect {
 }
 
 trait CGenMathOps extends BaseGenMathOps with CGenEffect {
-  val IR: MathOpsExp
+  val IR: MathOpsExp with LoweringTransform
   import IR._
   
   override def emitNode(sym: Sym[Any], rhs: Def[Any]) = rhs match {

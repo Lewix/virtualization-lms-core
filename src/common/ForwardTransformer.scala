@@ -4,10 +4,10 @@ package common
 import scala.collection.{immutable,mutable}
 import scala.reflect.SourceContext
 
-import scala.virtualization.lms.internal.{Effects, FatExpressions, Expressions, Transforming, AbstractSubstTransformer, FatBlockTraversal}
+import scala.virtualization.lms.internal.{Effects, FatTransforming, AbstractSubstTransformer, FatBlockTraversal}
 
 trait ForwardTransformer extends AbstractSubstTransformer with FatBlockTraversal { self =>
-  val IR: Expressions with Effects with FatExpressions with Transforming
+  val IR: FatTransforming with Effects
   import IR._
   
   def transformBlock[A:Manifest](block: Block[A]): Block[A] = {

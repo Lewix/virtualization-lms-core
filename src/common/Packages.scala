@@ -48,7 +48,7 @@ trait CCodeGenPkg extends CGenDSLOps with CGenImplicitOps with CGenNumericOps wi
     with CGenPrimitiveOps with CGenMiscOps with CGenFunctions with CGenEqual with CGenIfThenElse
     with CGenVariables with CGenWhile
     with CGenMathOps with CGenCastingOps with CGenSetOps with CGenArrayBufferOps
-    { val IR: ScalaOpsPkgExp  }
+    { val IR: ScalaOpsPkgExp with LoweringTransform }
 
 ///////
 // Cuda

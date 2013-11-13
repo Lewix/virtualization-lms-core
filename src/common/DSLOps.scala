@@ -49,5 +49,7 @@ trait CLikeGenDSLOps extends BaseGenDSLOps with CLikeGenBase {
 
 trait CudaGenDSLOps extends CudaGenEffect with CLikeGenDSLOps
 trait OpenCLGenDSLOps extends OpenCLGenEffect with CLikeGenDSLOps
-trait CGenDSLOps extends CGenEffect with CLikeGenDSLOps
-
+trait CGenDSLOps extends CGenEffect with CLikeGenDSLOps {
+  val IR: DSLOpsExp with LoweringTransform
+  import IR._
+}

@@ -159,7 +159,7 @@ trait OpenCLGenRangeOps extends OpenCLGenEffect with BaseGenRangeOps {
 }
 
 trait CGenRangeOps extends CGenEffect with BaseGenRangeOps {
-  val IR: RangeOpsExp
+  val IR: RangeOpsExp with LoweringTransform
   import IR._
 
   override def emitNode(sym: Sym[Any], rhs: Def[Any]) = rhs match {

@@ -376,6 +376,7 @@ trait OpenCLGenIfThenElseFat extends OpenCLGenIfThenElse with OpenCLGenFat with 
 }
 
 trait CGenIfThenElse extends CGenEffect with BaseGenIfThenElse {
+  val IR: IfThenElseExp with LoweringTransform
   import IR._
 
   override def emitNode(sym: Sym[Any], rhs: Def[Any]) = {
@@ -425,6 +426,7 @@ trait CGenIfThenElse extends CGenEffect with BaseGenIfThenElse {
 }
 
 trait CGenIfThenElseFat extends CGenIfThenElse with CGenFat with BaseGenIfThenElseFat {
+  val IR: IfThenElseFatExp with LoweringTransform
   import IR._
 
   override def emitFatNode(symList: List[Sym[Any]], rhs: FatDef) = rhs match {

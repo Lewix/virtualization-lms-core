@@ -115,4 +115,7 @@ trait CLikeGenHashMapOps extends BaseGenHashMapOps with CLikeCodegen {
 
 trait CudaGenHashMapOps extends CudaGenEffect with CLikeGenHashMapOps
 trait OpenCLGenHashMapOps extends OpenCLGenEffect with CLikeGenHashMapOps
-trait CGenHashMapOps extends CGenEffect with CLikeGenHashMapOps
+trait CGenHashMapOps extends CGenEffect with CLikeGenHashMapOps {
+  val IR: HashMapOpsExp with LoweringTransform
+  import IR._
+}
