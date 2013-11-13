@@ -12,6 +12,7 @@ int test2(int x0) {
 printf("Hello, world: test2\n"); // x1
 return x0;
 }
+
 /*****************************************
   End of C Generated Code                  
 *******************************************/
@@ -30,6 +31,7 @@ printf("Hello, world: test1\n"); // x4
 const int x5 = test2(x3);
 return x5;
 }
+
 /*****************************************
   End of C Generated Code                  
 *******************************************/
@@ -48,6 +50,7 @@ printf("Hello, world: main\n"); // x8
 const int x9 = test1(x7);
 return x9;
 }
+
 /*****************************************
   End of C Generated Code                  
 *******************************************/
