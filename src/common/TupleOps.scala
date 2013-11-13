@@ -74,13 +74,25 @@ trait TupleOpsExp extends TupleOps with StructExpOpt with LoweringTransform {
   val tuple_elems: Seq[String] = List("_1", "_2", "_3", "_4", "_5")
 
   implicit def make_tuple2[A:Manifest,B:Manifest](t: (Exp[A],Exp[B]))(implicit pos: SourceContext) : Exp[(A,B)] = {
-    (ETuple2(t._1, t._2)).atPhase(CCodegenLowering) {
+    ETuple2(t._1, t._2) atPhase(CCodegenLowering) {
       struct(classTag[(A,B)], tuple_elems(1) -> t._1, tuple_elems(2) -> t._2)
     }
   }
-  implicit def make_tuple3[A:Manifest,B:Manifest,C:Manifest](t: (Exp[A],Exp[B],Exp[C]))(implicit pos: SourceContext) : Exp[(A,B,C)] = struct(classTag[(A,B,C)], tuple_elems(1) -> t._1, tuple_elems(2) -> t._2, tuple_elems(3) -> t._3)
-  implicit def make_tuple4[A:Manifest,B:Manifest,C:Manifest,D:Manifest](t: (Exp[A],Exp[B],Exp[C],Exp[D]))(implicit pos: SourceContext) : Exp[(A,B,C,D)] = struct(classTag[(A,B,C,D)], tuple_elems(1) -> t._1, tuple_elems(2) -> t._2, tuple_elems(3) -> t._3, tuple_elems(4) -> t._4)
-  implicit def make_tuple5[A:Manifest,B:Manifest,C:Manifest,D:Manifest,E:Manifest](t: (Exp[A],Exp[B],Exp[C],Exp[D],Exp[E]))(implicit pos: SourceContext) : Exp[(A,B,C,D,E)] = struct(classTag[(A,B,C,D,E)], tuple_elems(1) -> t._1, tuple_elems(2) -> t._2, tuple_elems(3) -> t._3, tuple_elems(4) -> t._4, tuple_elems(5) -> t._5)
+  implicit def make_tuple3[A:Manifest,B:Manifest,C:Manifest](t: (Exp[A],Exp[B],Exp[C]))(implicit pos: SourceContext) : Exp[(A,B,C)] = {
+    ETuple3(t._1, t._2, t._3) atPhase(CCodegenLowering) {
+      struct(classTag[(A,B,C)], tuple_elems(1) -> t._1, tuple_elems(2) -> t._2, tuple_elems(3) -> t._3)
+    }
+  }
+  implicit def make_tuple4[A:Manifest,B:Manifest,C:Manifest,D:Manifest](t: (Exp[A],Exp[B],Exp[C],Exp[D]))(implicit pos: SourceContext) : Exp[(A,B,C,D)] = {
+    ETuple4(t._1, t._2, t._3, t._4) atPhase(CCodegenLowering) {
+      struct(classTag[(A,B,C,D)], tuple_elems(1) -> t._1, tuple_elems(2) -> t._2, tuple_elems(3) -> t._3, tuple_elems(4) -> t._4)
+    }
+  }
+  implicit def make_tuple5[A:Manifest,B:Manifest,C:Manifest,D:Manifest,E:Manifest](t: (Exp[A],Exp[B],Exp[C],Exp[D],Exp[E]))(implicit pos: SourceContext) : Exp[(A,B,C,D,E)] = {
+    ETuple5(t._1, t._2, t._3, t._4, t._5) atPhase(CCodegenLowering) {
+      struct(classTag[(A,B,C,D,E)], tuple_elems(1) -> t._1, tuple_elems(2) -> t._2, tuple_elems(3) -> t._3, tuple_elems(4) -> t._4, tuple_elems(5) -> t._5)
+    }
+  }
 
   case class Tuple2Access1[A:Manifest](t: Exp[(A,_)]) extends Def[A] { val m = manifest[A] }
   case class Tuple2Access2[B:Manifest](t: Exp[(_,B)]) extends Def[B] { val m = manifest[B] }

@@ -1,0 +1,23 @@
+/* FILE: main.c */
+int main(Tuple2IntInt);
+/*****************************************
+  Emitting C Generated Code                  
+*******************************************/
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdbool.h>
+
+typedef struct{
+int _1;
+int _2;
+} Tuple2IntInt;
+int main(Tuple2IntInt x0) {
+const int x1 = x0._2;
+const int x2 = x0._3;
+const int x3 = x1 + x2;
+return x3;
+}
+
+/*****************************************
+  End of C Generated Code                  
+*******************************************/
