@@ -109,29 +109,190 @@ trait TupleOpsExp extends TupleOps with StructExpOpt with LoweringTransform {
   case class Tuple5Access4[D:Manifest](t: Exp[(_,_,_,D,_)]) extends Def[D] { val m = manifest[D] }
   case class Tuple5Access5[E:Manifest](t: Exp[(_,_,_,_,E)]) extends Def[E] { val m = manifest[E] }
 
-  def tuple2_get1[A:Manifest](t: Exp[(A,_)])(implicit pos: SourceContext) = field[A](t, tuple_elems(1))
-  def tuple2_get2[B:Manifest](t: Exp[(_,B)])(implicit pos: SourceContext) = field[B](t, tuple_elems(2))
+  def tuple2_get1[A:Manifest](t: Exp[(A,_)])(implicit pos: SourceContext) = t match {
+    case Def(ETuple2(a,b)) => a
+    case _ =>
+      Tuple2Access1(t).atPhase(CCodegenLowering) {
+        field[A](t, tuple_elems(1))
+      }
+  }
+  def tuple2_get2[B:Manifest](t: Exp[(_,B)])(implicit pos: SourceContext) = t match {
+    case Def(ETuple2(a,b)) => b
+    case _ =>
+      Tuple2Access2(t).atPhase(CCodegenLowering) {
+        field[B](t, tuple_elems(2))
+      }
+  }
 
-  def tuple3_get1[A:Manifest](t: Exp[(A,_,_)])(implicit pos: SourceContext) = field[A](t, tuple_elems(1))
-  def tuple3_get2[B:Manifest](t: Exp[(_,B,_)])(implicit pos: SourceContext) = field[B](t, tuple_elems(2))
-  def tuple3_get3[C:Manifest](t: Exp[(_,_,C)])(implicit pos: SourceContext) = field[C](t, tuple_elems(3))
+  def tuple3_get1[A:Manifest](t: Exp[(A,_,_)])(implicit pos: SourceContext) = t match {
+    case Def(ETuple3(a,b,c)) => a
+    case _ =>
+      Tuple3Access1(t).atPhase(CCodegenLowering) {
+        field[A](t, tuple_elems(1))
+      }
+  }
+  def tuple3_get2[B:Manifest](t: Exp[(_,B,_)])(implicit pos: SourceContext) = t match {
+    case Def(ETuple3(a,b,c)) => b
+    case _ =>
+      Tuple3Access2(t).atPhase(CCodegenLowering) {
+        field[B](t, tuple_elems(2))
+      }
+  }
+  def tuple3_get3[C:Manifest](t: Exp[(_,_,C)])(implicit pos: SourceContext) = t match {
+    case Def(ETuple3(a,b,c)) => c
+    case _ =>
+      Tuple3Access3(t).atPhase(CCodegenLowering) {
+        field[C](t, tuple_elems(3))
+      }
+  }
 
-  def tuple4_get1[A:Manifest](t: Exp[(A,_,_,_)])(implicit pos: SourceContext) = field[A](t, tuple_elems(1))
-  def tuple4_get2[B:Manifest](t: Exp[(_,B,_,_)])(implicit pos: SourceContext) = field[B](t, tuple_elems(2))
-  def tuple4_get3[C:Manifest](t: Exp[(_,_,C,_)])(implicit pos: SourceContext) = field[C](t, tuple_elems(3))
-  def tuple4_get4[D:Manifest](t: Exp[(_,_,_,D)])(implicit pos: SourceContext) = field[D](t, tuple_elems(4))
+  def tuple4_get1[A:Manifest](t: Exp[(A,_,_,_)])(implicit pos: SourceContext) = t match {
+    case Def(ETuple4(a,b,c,d)) => a
+    case _ =>
+      Tuple4Access1(t).atPhase(CCodegenLowering) {
+        field[A](t, tuple_elems(1))
+      }
+  }
+  def tuple4_get2[B:Manifest](t: Exp[(_,B,_,_)])(implicit pos: SourceContext) = t match {
+    case Def(ETuple4(a,b,c,d)) => b
+    case _ =>
+      Tuple4Access2(t).atPhase(CCodegenLowering) {
+        field[B](t, tuple_elems(2))
+      }
+  }
+  def tuple4_get3[C:Manifest](t: Exp[(_,_,C,_)])(implicit pos: SourceContext) = t match {
+    case Def(ETuple4(a,b,c,d)) => c
+    case _ =>
+      Tuple4Access3(t).atPhase(CCodegenLowering) {
+        field[C](t, tuple_elems(3))
+      }
+  }
+  def tuple4_get4[D:Manifest](t: Exp[(_,_,_,D)])(implicit pos: SourceContext) = t match {
+    case Def(ETuple4(a,b,c,d)) => d
+    case _ =>
+      Tuple4Access4(t).atPhase(CCodegenLowering) {
+        field[D](t, tuple_elems(4))
+      }
+  }
 
-  def tuple5_get1[A:Manifest](t: Exp[(A,_,_,_,_)])(implicit pos: SourceContext) = field[A](t, tuple_elems(1))
-  def tuple5_get2[B:Manifest](t: Exp[(_,B,_,_,_)])(implicit pos: SourceContext) = field[B](t, tuple_elems(2))
-  def tuple5_get3[C:Manifest](t: Exp[(_,_,C,_,_)])(implicit pos: SourceContext) = field[C](t, tuple_elems(3))
-  def tuple5_get4[D:Manifest](t: Exp[(_,_,_,D,_)])(implicit pos: SourceContext) = field[D](t, tuple_elems(4))
-  def tuple5_get5[E:Manifest](t: Exp[(_,_,_,_,E)])(implicit pos: SourceContext) = field[E](t, tuple_elems(5))
+  def tuple5_get1[A:Manifest](t: Exp[(A,_,_,_,_)])(implicit pos: SourceContext) = t match {
+    case Def(ETuple5(a,b,c,d,e)) => a
+    case _ =>
+      Tuple5Access1(t).atPhase(CCodegenLowering) {
+        field[A](t, tuple_elems(1))
+      }
+  }
+  def tuple5_get2[B:Manifest](t: Exp[(_,B,_,_,_)])(implicit pos: SourceContext) = t match {
+    case Def(ETuple5(a,b,c,d,e)) => b
+    case _ =>
+      Tuple5Access2(t).atPhase(CCodegenLowering) {
+        field[B](t, tuple_elems(2))
+      }
+  }
+  def tuple5_get3[C:Manifest](t: Exp[(_,_,C,_,_)])(implicit pos: SourceContext) = t match {
+    case Def(ETuple5(a,b,c,d,e)) => c
+    case _ =>
+      Tuple5Access3(t).atPhase(CCodegenLowering) {
+        field[C](t, tuple_elems(3))
+      }
+  }
+  def tuple5_get4[D:Manifest](t: Exp[(_,_,_,D,_)])(implicit pos: SourceContext) = t match {
+    case Def(ETuple5(a,b,c,d,e)) => d
+    case _ =>
+      Tuple5Access4(t).atPhase(CCodegenLowering) {
+        field[D](t, tuple_elems(4))
+      }
+  }
+  def tuple5_get5[E:Manifest](t: Exp[(_,_,_,_,E)])(implicit pos: SourceContext) = t match {
+    case Def(ETuple5(a,b,c,d,e)) => e
+    case _ =>
+      Tuple5Access5(t).atPhase(CCodegenLowering) {
+        field[E](t, tuple_elems(5))
+      }
+  }
 
   object Both { def unapply[T](x:T):Some[(T,T)] = Some((x,x)) }
+
+  override def mirror[A:Manifest](e: Def[A], f: Transformer)(implicit pos: SourceContext): Exp[A] = (e match {
+    case e@ETuple2(a,b)     => make_tuple2(f(a),f(b))(e.m1,e.m2,pos)
+    case e@Tuple2Access1(t) => tuple2_get1(f(t))(mtype(e.m),pos)
+    case e@Tuple2Access2(t) => tuple2_get2(f(t))(mtype(e.m),pos)
+    case Reflect(e@Tuple2Access1(t), u, es) => reflectMirrored(Reflect(Tuple2Access1(f(t))(mtype(e.m)), mapOver(f,u), f(es)))(mtype(manifest[A]))
+    case Reflect(e@Tuple2Access2(t), u, es) => reflectMirrored(Reflect(Tuple2Access2(f(t))(mtype(e.m)), mapOver(f,u), f(es)))(mtype(manifest[A]))
+    
+    case e@ETuple3(a,b,c)   => make_tuple3(f(a),f(b),f(c))(e.m1,e.m2,e.m3,pos)
+    case e@Tuple3Access1(t) => tuple3_get1(f(t))(mtype(e.m),pos)
+    case e@Tuple3Access2(t) => tuple3_get2(f(t))(mtype(e.m),pos)
+    case e@Tuple3Access3(t) => tuple3_get3(f(t))(mtype(e.m),pos)
+    case Reflect(e@Tuple3Access1(t), u, es) => reflectMirrored(Reflect(Tuple3Access1(f(t))(mtype(e.m)), mapOver(f,u), f(es)))(mtype(manifest[A]))
+    case Reflect(e@Tuple3Access2(t), u, es) => reflectMirrored(Reflect(Tuple3Access2(f(t))(mtype(e.m)), mapOver(f,u), f(es)))(mtype(manifest[A]))
+    case Reflect(e@Tuple3Access3(t), u, es) => reflectMirrored(Reflect(Tuple3Access3(f(t))(mtype(e.m)), mapOver(f,u), f(es)))(mtype(manifest[A]))
+
+    case e@ETuple4(a,b,c,d) => make_tuple4(f(a),f(b),f(c),f(d))(e.m1,e.m2,e.m3,e.m4,pos)
+    case e@Tuple4Access1(t) => tuple4_get1(f(t))(mtype(e.m),pos)
+    case e@Tuple4Access2(t) => tuple4_get2(f(t))(mtype(e.m),pos)
+    case e@Tuple4Access3(t) => tuple4_get3(f(t))(mtype(e.m),pos)
+    case e@Tuple4Access4(t) => tuple4_get4(f(t))(mtype(e.m),pos)
+    case Reflect(e@Tuple4Access1(t), u, es) => reflectMirrored(Reflect(Tuple4Access1(f(t))(mtype(e.m)), mapOver(f,u), f(es)))(mtype(manifest[A]))
+    case Reflect(e@Tuple4Access2(t), u, es) => reflectMirrored(Reflect(Tuple4Access2(f(t))(mtype(e.m)), mapOver(f,u), f(es)))(mtype(manifest[A]))
+    case Reflect(e@Tuple4Access3(t), u, es) => reflectMirrored(Reflect(Tuple4Access3(f(t))(mtype(e.m)), mapOver(f,u), f(es)))(mtype(manifest[A]))    
+    case Reflect(e@Tuple4Access4(t), u, es) => reflectMirrored(Reflect(Tuple4Access4(f(t))(mtype(e.m)), mapOver(f,u), f(es)))(mtype(manifest[A]))    
+
+    case e@ETuple5(a,b,c,d,g) => make_tuple5(f(a),f(b),f(c),f(d),f(g))(e.m1,e.m2,e.m3,e.m4,e.m5,pos)
+    case e@Tuple5Access1(t)   => tuple5_get1(f(t))(mtype(e.m),pos)
+    case e@Tuple5Access2(t)   => tuple5_get2(f(t))(mtype(e.m),pos)
+    case e@Tuple5Access3(t)   => tuple5_get3(f(t))(mtype(e.m),pos)
+    case e@Tuple5Access4(t)   => tuple5_get4(f(t))(mtype(e.m),pos)
+    case e@Tuple5Access5(t)   => tuple5_get5(f(t))(mtype(e.m),pos)
+    case Reflect(e@Tuple5Access1(t), u, es) => reflectMirrored(Reflect(Tuple5Access1(f(t))(mtype(e.m)), mapOver(f,u), f(es)))(mtype(manifest[A]))
+    case Reflect(e@Tuple5Access2(t), u, es) => reflectMirrored(Reflect(Tuple5Access2(f(t))(mtype(e.m)), mapOver(f,u), f(es)))(mtype(manifest[A]))
+    case Reflect(e@Tuple5Access3(t), u, es) => reflectMirrored(Reflect(Tuple5Access3(f(t))(mtype(e.m)), mapOver(f,u), f(es)))(mtype(manifest[A]))    
+    case Reflect(e@Tuple5Access4(t), u, es) => reflectMirrored(Reflect(Tuple5Access4(f(t))(mtype(e.m)), mapOver(f,u), f(es)))(mtype(manifest[A]))    
+    case Reflect(e@Tuple5Access5(t), u, es) => reflectMirrored(Reflect(Tuple5Access5(f(t))(mtype(e.m)), mapOver(f,u), f(es)))(mtype(manifest[A]))    
+    
+    case _ => super.mirror(e,f)
+  }).asInstanceOf[Exp[A]]
 }
 
-trait TupleGenBase extends GenericCodegen with BaseGenStruct {
+trait TupleGenBase extends GenericCodegen with BaseGenStruct { val IR: TupleOpsExp }
+
+trait ScalaGenTupleOps extends ScalaGenBase with TupleGenBase {
   val IR: TupleOpsExp
+  import IR._
+
+  override def emitNode(sym: Sym[Any], rhs: Def[Any]) = rhs match {
+    case ETuple2(a,b)  =>
+      emitValDef(sym, src"($a,$b)")
+    case Tuple2Access1(t) => emitValDef(sym, src"$t._1")
+    case Tuple2Access2(t) => emitValDef(sym, src"$t._2")
+
+    case ETuple3(a,b,c)  =>
+      emitValDef(sym, src"($a,$b,$c)")
+    case Tuple3Access1(t) => emitValDef(sym, src"$t._1")
+    case Tuple3Access2(t) => emitValDef(sym, src"$t._2")
+    case Tuple3Access3(t) => emitValDef(sym, src"$t._3")
+
+    case ETuple4(a,b,c,d)  =>
+      emitValDef(sym, src"($a,$b,$c,$d)")
+    case Tuple4Access1(t) => emitValDef(sym, src"$t._1")
+    case Tuple4Access2(t) => emitValDef(sym, src"$t._2")
+    case Tuple4Access3(t) => emitValDef(sym, src"$t._3")
+    case Tuple4Access4(t) => emitValDef(sym, src"$t._4")
+
+    case ETuple5(a,b,c,d,e)  =>
+      emitValDef(sym, src"($a,$b,$c,$d,$e)")
+    case Tuple5Access1(t) => emitValDef(sym, src"$t._1")
+    case Tuple5Access2(t) => emitValDef(sym, src"$t._2")
+    case Tuple5Access3(t) => emitValDef(sym, src"$t._3")
+    case Tuple5Access4(t) => emitValDef(sym, src"$t._4")
+    case Tuple5Access5(t) => emitValDef(sym, src"$t._5")
+
+    case _ => super.emitNode(sym, rhs)
+  }
+}
+
+trait CGenTupleOps extends CGenBase with TupleGenBase with CGenStruct {
+  val IR: TupleOpsExp 
 
   override def remap[A](m: Manifest[A]) = m.runtimeClass.getSimpleName match {
     case "Tuple2" =>
@@ -153,6 +314,3 @@ trait TupleGenBase extends GenericCodegen with BaseGenStruct {
     case _ => super.remap(m)
   }
 }
-
-trait ScalaGenTupleOps extends ScalaGenBase with TupleGenBase with ScalaGenStruct { val IR: TupleOpsExp }
-trait CGenTupleOps extends CGenBase with TupleGenBase with CGenStruct { val IR: TupleOpsExp }
