@@ -72,7 +72,7 @@ trait ScalaGenMiscOps extends ScalaGenEffect {
 
 
 trait CGenMiscOps extends CGenEffect {
-  val IR: MiscOpsExp
+  val IR: MiscOpsExp with LoweringTransform
   import IR._
 
   override def emitNode(sym: Sym[Any], rhs: Def[Any]) = rhs match {

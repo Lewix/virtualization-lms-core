@@ -37,7 +37,7 @@ trait ScalaOpsPkgExpOpt extends ScalaOpsPkgExp
  * Code gen: each target must define a code generator package.
  */
 trait COpsPkg extends ScalaOpsPkg 
-trait COpsPkgExp extends ScalaOpsPkgExp 
+trait COpsPkgExp extends ScalaOpsPkgExp with LoweringTransform
 
 /////////
 // Scala

@@ -183,7 +183,7 @@ trait ScalaGenUninlinedFunctions extends ScalaGenEffect {
 }
 
 trait CGenUninlinedFunctions extends CGenEffect {
-  val IR: UninlinedFunctionsExp
+  val IR: UninlinedFunctionsExp with LoweringTransform
   import IR._
   
   var emitEnabled: Boolean = false

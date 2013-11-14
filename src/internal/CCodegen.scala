@@ -6,6 +6,7 @@ import java.util.ArrayList
 import collection.mutable.{ListBuffer, ArrayBuffer, LinkedList, HashMap, ListMap, HashSet, Map => MMap}
 import collection.immutable.List._
 
+import scala.virtualization.lms.common.LoweringTransform
 
 trait CCodegen extends CLikeCodegen {
   val IR: Expressions
@@ -119,9 +120,11 @@ trait CCodegen extends CLikeCodegen {
   def getMemoryAllocString(count: String, memType: String): String = {
   		"(" + memType + "*)malloc(" + count + " * sizeof(" + memType + "));"
   }
- 
-  def emitSource[A:Manifest](args: List[Sym[_]], body: Block[A], functionName: String, out: PrintWriter, dynamicReturnType: String = null, serializable: Boolean = false) = {
 
+  def runTransformations[A:Manifest](body: Block[A]): Block[A] = body
+ 
+  def emitSource[A:Manifest](args: List[Sym[_]], b: Block[A], functionName: String, out: PrintWriter, dynamicReturnType: String = null, serializable: Boolean = false) = {
+    val body = runTransformations(b)
     val sA = if (dynamicReturnType != null) dynamicReturnType else remap(manifest[A])
 
     withStream(out) {
@@ -359,9 +362,12 @@ trait CCodegen extends CLikeCodegen {
 
 // TODO: do we need this for each target?
 trait CNestedCodegen extends GenericNestedCodegen with CCodegen {
-  val IR: Expressions with Effects
+  val IR: Expressions with Effects with LoweringTransform
   import IR._
-  
+
+  override def runTransformations[A:Manifest](body: Block[A]): Block[A] = {
+    CCodegenLowering.run(body)
+  }
 }
 
 trait CFatCodegen extends GenericFatCodegen with CCodegen {

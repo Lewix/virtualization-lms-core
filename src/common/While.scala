@@ -193,4 +193,6 @@ trait CudaGenWhile extends CudaGenEffect with CLikeGenWhile
 
 trait OpenCLGenWhile extends OpenCLGenEffect with CLikeGenWhile
 
-trait CGenWhile extends CGenEffect with CLikeGenWhile
+trait CGenWhile extends CGenEffect with CLikeGenWhile {
+  val IR: WhileExp with LoweringTransform
+}

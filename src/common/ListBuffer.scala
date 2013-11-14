@@ -88,7 +88,7 @@ trait ScalaGenListBuffer extends ScalaGenBase with ScalaNestedCodegen {
 }
 
 trait CGenListBuffer extends CGenBase with CNestedCodegen {
-	val IR: ListBufferExp
+	val IR: ListBufferExp with LoweringTransform
 	import IR._
   
 	override def emitNode(sym: Sym[Any], rhs: Def[Any]) = rhs match {

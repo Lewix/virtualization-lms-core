@@ -297,4 +297,6 @@ trait CLikeGenVariables extends CLikeGenBase {
 
 trait CudaGenVariables extends CudaGenEffect with CLikeGenVariables
 trait OpenCLGenVariables extends OpenCLGenEffect with CLikeGenVariables
-trait CGenVariables extends CGenEffect with CLikeGenVariables
+trait CGenVariables extends CGenEffect with CLikeGenVariables {
+  val IR: VariablesExp with LoweringTransform
+}

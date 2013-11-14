@@ -287,7 +287,7 @@ trait ScalaGenGeneratorOps extends ScalaGenVariables
 
 trait CGenGeneratorOps extends CGenVariables
   with CGenIfThenElse with CLikeGenEqual with CLikeGenListOps {
-  val IR: GeneratorOpsExp
+  val IR: GeneratorOpsExp with LoweringTransform
   import IR._
 
   /*override def emitNode(sym: Sym[Any], rhs: Def[Any]) = rhs match {

@@ -354,7 +354,7 @@ trait OpenCLGenFunctions extends OpenCLGenEffect with BaseGenFunctions {
 }
 
 trait CGenFunctions extends CGenEffect with BaseGenFunctions {
-  val IR: FunctionsExp
+  val IR: FunctionsExp with LoweringTransform
   import IR._
 
   override def emitNode(sym: Sym[Any], rhs: Def[Any]) = rhs match {
@@ -372,7 +372,7 @@ trait CGenFunctions extends CGenEffect with BaseGenFunctions {
 }
 
 trait CGenTupledFunctions extends CGenFunctions with GenericGenUnboxedTupleAccess {
-  val IR: TupledFunctionsExp
+  val IR: TupledFunctionsExp with LoweringTransform
   import IR._
 
   /*override def quote(x: Exp[Any]) : String = x match {
