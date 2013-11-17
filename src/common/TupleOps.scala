@@ -5,6 +5,8 @@ import java.io.PrintWriter
 import scala.reflect.SourceContext
 
 trait TupleOps extends Base {
+  val tuple_elems: Seq[String]
+
   implicit def make_tuple2[A1:Manifest,A2:Manifest](t: (Rep[A1], Rep[A2]))(implicit pos: SourceContext) : Rep[(A1,A2)]
   implicit def make_tuple3[A1:Manifest,A2:Manifest,A3:Manifest](t: (Rep[A1], Rep[A2], Rep[A3]))(implicit pos: SourceContext) : Rep[(A1,A2,A3)]
   implicit def make_tuple4[A1:Manifest,A2:Manifest,A3:Manifest,A4:Manifest](t: (Rep[A1], Rep[A2], Rep[A3], Rep[A4]))(implicit pos: SourceContext) : Rep[(A1,A2,A3,A4)]
@@ -351,9 +353,13 @@ trait TupleOps extends Base {
   def listToTuple(y: List[Rep[Any]]): Rep[Product]
 }
 
-trait TupleOpsExp extends TupleOps with EffectExp {
+trait TupleOpsExp extends TupleOps with EffectExp with LoweringTransform with StructExpOpt {
+  val tuple_elems: Seq[String] = List("_1", "_2")
 
-  implicit def make_tuple2[A1:Manifest,A2:Manifest](t: (Exp[A1],Exp[A2]))(implicit pos: SourceContext) : Exp[(A1,A2)] = ETuple2(t._1, t._2)
+  implicit def make_tuple2[A1:Manifest,A2:Manifest](t: (Exp[A1],Exp[A2]))(implicit pos: SourceContext) : Exp[(A1,A2)] =
+    (ETuple2(t._1, t._2)).atPhase(CCodegenLowering) {
+      struct(classTag[(A1,A2)], tuple_elems(0) -> t._1, tuple_elems(1) -> t._2)
+    }
   implicit def make_tuple3[A1:Manifest,A2:Manifest,A3:Manifest](t: (Exp[A1],Exp[A2],Exp[A3]))(implicit pos: SourceContext) : Exp[(A1,A2,A3)] = ETuple3(t._1, t._2, t._3)
   implicit def make_tuple4[A1:Manifest,A2:Manifest,A3:Manifest,A4:Manifest](t: (Exp[A1],Exp[A2],Exp[A3],Exp[A4]))(implicit pos: SourceContext) : Exp[(A1,A2,A3,A4)] = ETuple4(t._1, t._2, t._3, t._4)
   implicit def make_tuple5[A1:Manifest,A2:Manifest,A3:Manifest,A4:Manifest,A5:Manifest](t: (Exp[A1],Exp[A2],Exp[A3],Exp[A4],Exp[A5]))(implicit pos: SourceContext) : Exp[(A1,A2,A3,A4,A5)] = ETuple5(t._1, t._2, t._3, t._4, t._5)
@@ -946,11 +952,17 @@ trait TupleOpsExp extends TupleOps with EffectExp {
 
   def tuple2_get1[A1:Manifest](t: Exp[(A1,_)])(implicit pos: SourceContext) = t match {
     case Def(ETuple2(a1,a2)) => a1
-    case _ => Tuple2Access1(t)
+    case _ =>
+      Tuple2Access1(t).atPhase(CCodegenLowering) {
+        field[A1](t, tuple_elems(0))
+      }
   }
   def tuple2_get2[A2:Manifest](t: Exp[(_,A2)])(implicit pos: SourceContext) = t match {
     case Def(ETuple2(a1,a2)) => a2
-    case _ => Tuple2Access2(t)
+    case _ =>
+      Tuple2Access2(t).atPhase(CCodegenLowering) {
+        field[A2](t, tuple_elems(1))
+      }
   }
 
   def tuple3_get1[A1:Manifest](t: Exp[(A1,_,_)])(implicit pos: SourceContext) = t match {
@@ -2862,10 +2874,18 @@ trait ScalaGenTupleOps extends ScalaGenBase {
   }
 }
 
-trait CGenTupleOps extends CGenBase {
+trait CGenTupleOps extends CGenBase with CGenStruct {
   val IR: TupleOpsExp
   import IR._
   override def emitNode(sym: Sym[Any], rhs: Def[Any]) = rhs match {
     case _ => super.emitNode(sym, rhs)
+  }
+
+  override def remap[A](m: Manifest[A]) = m.runtimeClass.getSimpleName match {
+    case "Tuple2" =>
+      val elems = IR.tuple_elems.take(2) zip m.typeArguments
+      registerType(m, Map(elems: _*))
+      IR.structName(m) + "*"
+    case _ => super.remap(m)
   }
 }
