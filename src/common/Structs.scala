@@ -80,6 +80,13 @@ trait StructExp extends Structs with BaseExp with EffectExp {
     case _ => super.mirror(e,f)
   }
 
+  def classTag[T:Manifest] = ClassTag[T](structName(manifest[T]))
+
+  def structName[T](m: Manifest[T]): String = m match {
+    case rm: reflect.RefinedManifest[T] => rm.erasure.getSimpleName + rm.fields.map(f => structName(f._2)).mkString.replace("[]","")
+    case _ => m.erasure.getSimpleName + m.typeArguments.map(a => structName(a)).mkString.replace("[]","")
+  }
+
   // FIXME Define a custom `object_toString` for structs?
 
 }
@@ -258,8 +265,8 @@ trait ScalaGenStruct extends ScalaGenBase {
       Array --> transform soa back to aos
       */
       if (sym.tp <:< manifest[Record]) {
-        registerType(sym.tp, elems)
-        emitValDef(sym, recordClassName(sym.tp) + "(" + (for ((n, v) <- elems) yield n + " = " + quote(v)).mkString(", ") + ")")
+        registerTypeFromExp(sym.tp, elems)
+        emitValDef(sym, structName(sym.tp) + "(" + (for ((n, v) <- elems) yield n + " = " + quote(v)).mkString(", ") + ")")
       } else {
         emitValDef(sym, "new { " + (for ((n, v) <- elems) yield "val " + n + " = " + quote(v)).mkString("; ") + " }")
       }
@@ -270,25 +277,21 @@ trait ScalaGenStruct extends ScalaGenBase {
 
   // Records generate a class
   override def remap[A](m: Manifest[A]) = m match {
-    case m if m <:< manifest[Record] => recordClassName(m)
+    case m if m <:< manifest[Record] => structName(m)
     case _ => super.remap(m)
   }
 
-  // not public because should not be called with a manifest not describing a subtype of Manifest[Record]
-  protected def recordClassName[A](m: Manifest[A]): String = m match {
-    case rm: reflect.RefinedManifest[A] => rm.erasure.getSimpleName + rm.fields.map(f => recordClassName(f._2)).mkString.replace("[]","")
-    case _ => m.erasure.getSimpleName + m.typeArguments.map(a => recordClassName(a)).mkString.replace("[]","")
+  private val encounteredStructs = collection.mutable.HashMap.empty[String, Map[String, Manifest[_]]]
+  private def registerType[A](m: Manifest[A], fields: Map[String, Manifest[_]]) {
+    encounteredStructs += (structName(m) -> fields)
   }
-
-  private val encounteredStructs = collection.mutable.HashMap.empty[String, Map[String, Exp[_]]]
-  private def registerType[A](m: Manifest[A], fields: Map[String, Exp[_]]) {
-    encounteredStructs += (recordClassName(m) -> fields)
-  }
+  private def registerTypeFromExp[A](m: Manifest[A], fields: Map[String, Exp[_]]) =
+    registerType(m, fields.mapValues(e => e.tp))
 
   override def emitDataStructures(out: PrintWriter) {
     withStream(out) {
       for ((name, fields) <- encounteredStructs) {
-        stream.println("case class " + name + "(" + (for ((n, e) <- fields) yield n + ": " + remap(e.tp)).mkString(", ") + ")")
+        stream.println("case class " + name + "(" + (for ((n, m) <- fields) yield n + ": " + remap(m)).mkString(", ") + ")")
       }
     }
   }
@@ -311,46 +314,31 @@ trait CGenStruct extends CGenBase {
 
   override def emitNode(sym: Sym[Any], rhs: Def[Any]) = rhs match {
     case Struct(tag, elems) =>
-      /* TODO: emit code that creates an object corresponding to the tag and the manifest 
-      
-      RefinedManifest  -->  new Base { def field = value }
-      Class --> new Base(field = value)
-      
-      Array --> transform soa back to aos
-      */
-      if (sym.tp <:< manifest[Record]) {
-        registerType(sym.tp, elems)
-        allocStruct(sym, recordClassName(sym.tp), stream)
-		stream.println((for ((n, v) <- elems) yield quote(sym) + "->" + n + " = " + quote(v)).mkString(";\n") + ";")
-      } else {
-        emitValDef(sym, "new { " + (for ((n, v) <- elems) yield "val " + n + " = " + quote(v)).mkString("; ") + " }")
-      }
+      registerTypeFromExp(sym.tp, elems)
+      allocStruct(sym, structName(sym.tp), stream)
+      stream.println((for ((n, v) <- elems) yield quote(sym) + "->" + n + " = " + quote(v)).mkString(";\n") + ";")
     case Field(struct, index, tp) =>  
       emitValDef(sym, quote(struct) + "->" + index)
     case _ => super.emitNode(sym, rhs)
   }
 
-  // Records generate a class
+  // Structs generate a C struct
   override def remap[A](m: Manifest[A]) = m match {
-    case m if m <:< manifest[Record] => "struct " + recordClassName(m) + "*"
+    case m if m <:< manifest[Struct] => "struct " + structName(m)
     case _ => super.remap(m)
   }
 
-  // not public because should not be called with a manifest not describing a subtype of Manifest[Record]
-  protected def recordClassName[A](m: Manifest[A]): String = m match {
-    case rm: reflect.RefinedManifest[A] => rm.erasure.getSimpleName + rm.fields.map(f => recordClassName(f._2)).mkString.replace("[]","")
-    case _ => m.erasure.getSimpleName + m.typeArguments.map(a => recordClassName(a)).mkString.replace("[]","")
+  private val encounteredStructs = collection.mutable.HashMap.empty[String, Map[String, Manifest[_]]]
+  def registerType[A](m: Manifest[A], fields: Map[String, Manifest[_]]) {
+    encounteredStructs += (structName(m) -> fields)
   }
-
-  private val encounteredStructs = collection.mutable.HashMap.empty[String, Map[String, Exp[_]]]
-  private def registerType[A](m: Manifest[A], fields: Map[String, Exp[_]]) {
-    encounteredStructs += (recordClassName(m) -> fields)
-  }
+  private def registerTypeFromExp[A](m: Manifest[A], fields: Map[String, Exp[_]]) =
+    registerType(m, fields.mapValues(e => e.tp))
 
   override def emitDataStructures(out: PrintWriter) {
     withStream(out) {
       for ((name, fields) <- encounteredStructs) {
-        stream.println("struct " + name + "{\n" + (for ((n, e) <- fields) yield {remap(e.tp) + " " + n + ";\n"}).mkString + "};")
+        stream.println("struct " + name + "{\n" + (for ((n, m) <- fields) yield {remap(m) + " " + n + ";\n"}).mkString + "};")
       }
     }
   }
