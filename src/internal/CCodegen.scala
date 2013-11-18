@@ -121,10 +121,7 @@ trait CCodegen extends CLikeCodegen {
   		"(" + memType + "*)malloc(" + count + " * sizeof(" + memType + "));"
   }
 
-  def runTransformations[A:Manifest](body: Block[A]): Block[A] = body
- 
-  def emitSource[A:Manifest](args: List[Sym[_]], b: Block[A], functionName: String, out: PrintWriter, dynamicReturnType: String = null, serializable: Boolean = false) = {
-    val body = runTransformations(b)
+  def emitSource[A:Manifest](args: List[Sym[_]], body: Block[A], functionName: String, out: PrintWriter, dynamicReturnType: String = null, serializable: Boolean = false) = {
     val sA = if (dynamicReturnType != null) dynamicReturnType else remap(manifest[A])
 
     withStream(out) {

@@ -126,6 +126,8 @@ trait GenericCodegen extends BlockTraversal {
 
   def emitValDef(sym: Sym[Any], rhs: String): Unit
   
+  def runTransformations[A:Manifest](body: Block[A]): Block[A] = body
+
   def emitSource0[R : Manifest](f: () => Exp[R], className: String, stream: PrintWriter, dynamicReturnType: String = null): List[(Sym[Any], Any)] = {
     val body = reifyBlock(f())
     emitSource(List(), body, className, stream, dynamicReturnType)
@@ -487,10 +489,35 @@ trait GenericCodegen extends BlockTraversal {
 
 
 
-trait GenericNestedCodegen extends NestedBlockTraversal with GenericCodegen {
+trait GenericNestedCodegen extends NestedBlockTraversal with GenericCodegen { self =>
   val IR: Expressions with Effects
   import IR._
 
+  trait LIRLoweringTraversal extends NestedBlockTraversal {
+    val IR: self.IR.type = self.IR
+    import IR._
+    override def traverseStm(stm: Stm): Unit = {
+      stm match {
+        case TP(sym, rhs) => lowerNode(sym, rhs)
+        case _ => throw new GenerationFailedException(s"don't know how to generate code for statement: $stm")
+      }
+      super.traverseStm(stm)
+    }
+  }
+
+  def lowerNode(sym: Sym[Any], rhs: Def[Any]): Unit = {
+    println(s"lowerNode: $sym, $rhs")
+    rhs match {
+      case Reflect(s, u, effects) =>
+        lowerNode(sym, s)
+      case _ => ()
+    }
+  }
+
+  def lirLowering[A:Manifest](body: Block[A]): Unit = {
+    (new LIRLoweringTraversal {}).traverseBlock(body)
+  }
+ 
   override def traverseStm(stm: Stm) = super[GenericCodegen].traverseStm(stm)
     
   override def emitNode(sym: Sym[Any], rhs: Def[Any]) = rhs match {

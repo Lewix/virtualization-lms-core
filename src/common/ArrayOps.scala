@@ -62,6 +62,10 @@ trait ArrayOps extends Variables {
 }
 
 trait ArrayOpsExp extends ArrayOps with EffectExp with VariablesExp {
+  case class CArrayNew[T:Manifest](n: Exp[Int], specializedType: Rep[String] = unit("")) extends Def[Array[T]] {
+    val m = manifest[T]
+  }
+  case class CArrayUpdate[T:Manifest](a: Exp[Array[T]], n: Exp[Int], y: Exp[T]) extends Def[Unit]
   case class ArrayNew[T:Manifest](n: Exp[Int], specializedType: Rep[String] = unit("")) extends Def[Array[T]] {
     val m = manifest[T]
   }
@@ -91,6 +95,8 @@ trait ArrayOpsExp extends ArrayOps with EffectExp with VariablesExp {
   case class ArrayMkString[A:Manifest](a: Exp[Array[A]], b: Exp[String] = unit("")) extends Def[String]
   case class ArrayCorresponds[A:Manifest, B: Manifest](x: Exp[Array[A]], x2: Exp[Array[B]]) extends Def[Boolean]
   
+  def carray_obj_new[T:Manifest](n: Exp[Int], specializedType: Rep[String] = unit("")) = reflectMutable(CArrayNew(n, specializedType))
+  def carray_update[T:Manifest](x: Exp[Array[T]], n: Exp[Int], y: Exp[T])(implicit pos: SourceContext) = reflectWrite(x)(CArrayUpdate(x,n,y))
   def array_obj_new[T:Manifest](n: Exp[Int], specializedType: Rep[String] = unit("")) = reflectMutable(ArrayNew(n, specializedType))
   def array_obj_fromseq[T:Manifest](xs: Seq[T]) = /*reflectMutable(*/ ArrayFromSeq(xs) /*)*/
   def array_apply[T:Manifest](x: Exp[Array[T]], n: Exp[Int])(implicit pos: SourceContext): Exp[T] = ArrayApply(x, n)
@@ -346,8 +352,29 @@ trait CLikeGenArrayOps extends BaseGenArrayOps with CLikeGenBase {
 trait CudaGenArrayOps extends CudaGenBase with CLikeGenArrayOps
 trait OpenCLGenArrayOps extends OpenCLGenBase with CLikeGenArrayOps
 trait CGenArrayOps extends CGenBase with CLikeGenArrayOps {
-	val IR: ArrayOpsExp
-  	import IR._
+	val IR: ArrayOpsExp with StructExpOpt with LoweringTransform
+  import IR._
+
+  override def lowerNode(sym: Sym[Any], rhs: Def[Any]) = {
+  	rhs match {
+    case ArrayNew(n, specializedType) =>
+      sym.atPhase(CCodegenLowering) {
+        struct(classTag(sym.tp),
+               "array" -> carray_obj_new(n, specializedType),
+               "length" -> n)
+      }
+    case ArrayUpdate(a, n, y) =>
+      sym.atPhase(CCodegenLowering) {
+      	val ca = field(a, "array")
+      	carray_update(ca, n, y)
+      }
+    case ArrayLength(a) =>
+      sym.atPhase(CCodegenLowering) {
+        field(a, "length")
+      }
+    case _ => super.lowerNode(sym, rhs)
+    }
+  }
 
   	override def emitNode(sym: Sym[Any], rhs: Def[Any]) = {
     	rhs match {
