@@ -35,6 +35,7 @@ trait LoweringTransform extends FatTransforming with Effects { self =>
 
   trait LoweringTransformer extends WorklistTransformer { val IR: self.type = self }
 
+  object HIRLowering extends LoweringTransformer
   object CCodegenLowering extends LoweringTransformer
   // ---------- Exp api
   
