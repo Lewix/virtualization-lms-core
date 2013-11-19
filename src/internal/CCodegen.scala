@@ -367,7 +367,9 @@ trait CNestedCodegen extends GenericNestedCodegen with CCodegen {
   }
 
   override def emitSource[A:Manifest](args: List[Sym[_]], b: Block[A], functionName: String, out: PrintWriter, dynamicReturnType: String = null, serializable: Boolean = false) = {
-    val body = runTransformations(b)
+    val lirBody = runTransformations(b)
+    lirLowering(lirBody)
+    val body = CCodegenLowering.run(lirBody)
     super.emitSource(args, body, functionName, out, dynamicReturnType)
   }
 }

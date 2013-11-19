@@ -355,39 +355,37 @@ trait CGenArrayOps extends CGenBase with CLikeGenArrayOps {
 	val IR: ArrayOpsExp with StructExpOpt with LoweringTransform
   import IR._
 
-  override def lowerNode(sym: Sym[Any], rhs: Def[Any]) = {
-  	rhs match {
-    case ArrayNew(n, specializedType) =>
+  override def lowerNode(sym: Sym[Any], rhs: Def[Any]) = rhs match {
+    case a@ArrayNew(n, sType) =>
       sym.atPhase(CCodegenLowering) {
-        struct(classTag(sym.tp),
-               "array" -> carray_obj_new(n, specializedType),
+        struct(classTag(a.m),
+               "array" -> carray_obj_new(n, sType)(a.m),
                "length" -> n)
       }
     case ArrayUpdate(a, n, y) =>
       sym.atPhase(CCodegenLowering) {
-      	val ca = field(a, "array")
-      	carray_update(ca, n, y)
+      	val ca = field(CCodegenLowering(a), "array")
+      	carray_update(ca, CCodegenLowering(n), CCodegenLowering(y))
       }
     case ArrayLength(a) =>
       sym.atPhase(CCodegenLowering) {
-        field(a, "length")
+        field(CCodegenLowering(a), "length")
       }
     case _ => super.lowerNode(sym, rhs)
+  }
+  
+  //TODO: C array apply
+  override def emitNode(sym: Sym[Any], rhs: Def[Any]) = {
+    rhs match {
+      case a@CArrayNew(n, sType) =>
+        println(s"CArrayNew manifest: ${a.m}")
+        val tp =
+          if (quote(sType) == "\"\"") remap(a.m)
+          else remapInternal(quote(sType).replaceAll("\"",""))
+        gen"$tp* $sym = ($tp*)malloc($n * sizeof($tp));"
+      case CArrayUpdate(ca, n, y) =>
+        emitValDef(sym, src"$ca[$n] = $y;")
+      case _ => super.emitNode(sym, rhs)
     }
   }
-
-  	override def emitNode(sym: Sym[Any], rhs: Def[Any]) = {
-    	rhs match {
-    		case a@ArrayNew(n, sType) => {
-        		val arrType = if (quote(sType) != "\"\"") remapInternal(quote(sType).replaceAll("\"","")) else remap(a.m)
-		        stream.println(arrType + "* " + quote(sym) + " = " + getMemoryAllocString(quote(n), arrType))
-				// Simulate length
-				stream.println("int " + quote(sym) + "Size = " + quote(n) + ";")
-			}
-			case ArrayApply(x,n) => emitValDef(sym, quote(x) + "[" + quote(n) + "]")
-        	case ArrayUpdate(x,n,y) => stream.println(quote(x) + "[" + quote(n) + "] = " + quote(y) + ";")
-    		case ArrayMkString(a, del) => stream.println("TODO: IMPLEMENT ARRAY MKSTRING")
-        	case _ => super.emitNode(sym, rhs)
-		}
-	}
 }
