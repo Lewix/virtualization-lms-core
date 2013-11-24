@@ -39,8 +39,8 @@ class TestCCollections extends FileDiffSuite {
     emitAll()
   }
 
-  def testCTuplesCreation = {
-    withOutFile(prefix+"ctuples1") {
+  it("testCTuplesCreation") {
+    withOutFileChecked(prefix+"ctuples1") {
       trait Prog extends DSL {
         toplevel("main") { x: Rep[Int] =>
           make_tuple2((x, x+1))
@@ -48,11 +48,10 @@ class TestCCollections extends FileDiffSuite {
       }
       new Prog with Impl
     }
-    assertFileEqualsCheck(prefix+"ctuples1")
   }
   
-  def testCTuplesAccess = {
-    withOutFile(prefix+"ctuples2") {
+  it("testCTuplesAccess") {
+    withOutFileChecked(prefix+"ctuples2") {
       trait Prog extends DSL {
         toplevel("main") { x: Rep[(Int,Int)] =>
           x._1 + x._2
@@ -60,11 +59,10 @@ class TestCCollections extends FileDiffSuite {
       }
       new Prog with Impl
     }
-    assertFileEqualsCheck(prefix+"ctuples2")
   }
 
-  def testCArrayCreation = {
-    withOutFile(prefix+"carrays1") {
+  it("testCArrayCreation") {
+    withOutFileChecked(prefix+"carrays1") {
       trait Prog extends DSL {
         toplevel("main") { x: Rep[Int] =>
           val a = array_obj_new[Int](unit(5))
@@ -74,7 +72,6 @@ class TestCCollections extends FileDiffSuite {
       }
       new Prog with Impl
     }
-    assertFileEqualsCheck(prefix+"carrays1")
   }
 }
 
