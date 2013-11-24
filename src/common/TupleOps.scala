@@ -2893,11 +2893,18 @@ trait CGenTupleOps extends CGenBase with CGenStruct {
     case _ => super.emitNode(sym, rhs)
   }
 
-  override def remap[A](m: Manifest[A]) = m.runtimeClass.getSimpleName match {
+  override def structName[A](m: Manifest[A]) = m.runtimeClass.getSimpleName match {
     case "Tuple2" =>
-      val elems = IR.tuple_elems.take(2) zip m.typeArguments
-      registerType(m, Map(elems: _*))
-      IR.structName(m) + "*"
-    case _ => super.remap(m)
+      val args = (m.typeArguments map ((m: Manifest[_]) => structName(m))).mkString
+      s"tuple2$args"
+    case _ => super.structName(m)
+  }
+
+  override def remap[A](m: Manifest[A]) = m.runtimeClass.getSimpleName match {
+  	case "Tuple2" =>
+  	  val elems = IR.tuple_elems.take(2) zip m.typeArguments
+  	  registerType(m, Map(elems: _*))
+  	  s"struct ${structName(m)}*"
+  	case _ => super[CGenStruct].remap(m)
   }
 }

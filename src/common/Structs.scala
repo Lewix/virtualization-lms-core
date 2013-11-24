@@ -38,6 +38,7 @@ trait StructExp extends Structs with BaseExp with EffectExp {
   case class ClassTag[T](name: String) extends StructTag[T]
   case class NestClassTag[C[_],T](elem: StructTag[T]) extends StructTag[C[T]]
   case class MapTag[T] extends StructTag[T]
+  case class ManifestTag[T](m: Manifest[T]) extends StructTag[T]
 
   abstract class AbstractStruct[T] extends Def[T] {
     val tag: StructTag[T]
@@ -80,12 +81,7 @@ trait StructExp extends Structs with BaseExp with EffectExp {
     case _ => super.mirror(e,f)
   }
 
-  def classTag[T:Manifest] = ClassTag[T](structName(manifest[T]))
-
-  def structName[T](m: Manifest[T]): String = m match {
-    case rm: reflect.RefinedManifest[T] => rm.erasure.getSimpleName + rm.fields.map(f => structName(f._2)).mkString.replace("[]","")
-    case _ => m.erasure.getSimpleName + m.typeArguments.map(a => structName(a)).mkString.replace("[]","")
-  }
+  def classTag[T:Manifest] = ManifestTag(manifest[T])
 
   // FIXME Define a custom `object_toString` for structs?
 
@@ -250,10 +246,14 @@ trait StructFatExpOptCommon extends StructFatExp with StructExpOptCommon with If
 }
 
 
-
 trait ScalaGenStruct extends ScalaGenBase {
   val IR: StructExp
   import IR._
+
+  def structName[T](m: Manifest[T]): String = m match {
+    case rm: reflect.RefinedManifest[T] => rm.erasure.getSimpleName + rm.fields.map(f => structName(f._2)).mkString.replace("[]","")
+    case _ => m.erasure.getSimpleName + m.typeArguments.map(a => structName(a)).mkString.replace("[]","")
+  }
 
   override def emitNode(sym: Sym[Any], rhs: Def[Any]) = rhs match {
     case Struct(tag, elems) =>
@@ -281,17 +281,17 @@ trait ScalaGenStruct extends ScalaGenBase {
     case _ => super.remap(m)
   }
 
-  private val encounteredStructs = collection.mutable.HashMap.empty[String, Map[String, Manifest[_]]]
+  private val encounteredStructs = collection.mutable.HashMap.empty[Manifest[_], Map[String, Manifest[_]]]
   private def registerType[A](m: Manifest[A], fields: Map[String, Manifest[_]]) {
-    encounteredStructs += (structName(m) -> fields)
+    encounteredStructs += (m -> fields)
   }
   private def registerTypeFromExp[A](m: Manifest[A], fields: Map[String, Exp[_]]) =
     registerType(m, fields.mapValues(e => e.tp))
 
   override def emitDataStructures(out: PrintWriter) {
     withStream(out) {
-      for ((name, fields) <- encounteredStructs) {
-        stream.println("case class " + name + "(" + (for ((n, m) <- fields) yield n + ": " + remap(m)).mkString(", ") + ")")
+      for ((structM, fields) <- encounteredStructs) {
+        stream.println("case class " + structName(structM) + "(" + (for ((n, m) <- fields) yield n + ": " + remap(m)).mkString(", ") + ")")
       }
     }
   }
@@ -312,6 +312,15 @@ trait CGenStruct extends CGenBase {
   val IR: StructExp
   import IR._
 
+  def structName[T](m: Manifest[T]): String = m match {
+    case rm: reflect.RefinedManifest[T] => rm.erasure.getSimpleName + rm.fields.map(f => structName(f._2)).mkString.replace("[]","")
+    case _ => m.erasure.getSimpleName + m.typeArguments.map(a => structName(a)).mkString.replace("[]","")
+  }
+
+  override def allocStruct(sym: Sym[Any], structName: String, out: PrintWriter) {
+  		out.println("struct " + structName + "* " + quote(sym) + " = (struct " + structName + "*)malloc(sizeof(struct " + structName + "));")
+  }
+
   override def emitNode(sym: Sym[Any], rhs: Def[Any]) = rhs match {
     case Struct(tag, elems) =>
       registerTypeFromExp(sym.tp, elems)
@@ -324,21 +333,21 @@ trait CGenStruct extends CGenBase {
 
   // Structs generate a C struct
   override def remap[A](m: Manifest[A]) = m match {
-    case m if m <:< manifest[Struct] => "struct " + structName(m)
+    case m if m <:< manifest[Struct] => "struct " + structName(m) + "*"
     case _ => super.remap(m)
   }
 
-  private val encounteredStructs = collection.mutable.HashMap.empty[String, Map[String, Manifest[_]]]
+  private val encounteredStructs = collection.mutable.HashMap.empty[Manifest[_], Map[String, Manifest[_]]]
   def registerType[A](m: Manifest[A], fields: Map[String, Manifest[_]]) {
-    encounteredStructs += (structName(m) -> fields)
+    encounteredStructs += (m -> fields)
   }
   private def registerTypeFromExp[A](m: Manifest[A], fields: Map[String, Exp[_]]) =
     registerType(m, fields.mapValues(e => e.tp))
 
   override def emitDataStructures(out: PrintWriter) {
     withStream(out) {
-      for ((name, fields) <- encounteredStructs) {
-        stream.println("struct " + name + "{\n" + (for ((n, m) <- fields) yield {remap(m) + " " + n + ";\n"}).mkString + "};")
+      for ((structM, fields) <- encounteredStructs) {
+        stream.println("struct " + structName(structM) + "{\n" + (for ((n, m) <- fields) yield {remap(m) + " " + n + ";\n"}).mkString + "};")
       }
     }
   }
