@@ -362,6 +362,8 @@ trait CNestedCodegen extends GenericNestedCodegen with CCodegen {
   val IR: Expressions with Effects with LoweringTransform
   import IR._
 
+  object CCodegenLowering extends LoweringTransformer
+
   override def runTransformations[A:Manifest](body: Block[A]): Block[A] = {
     HIRLowering.run(body)
   }

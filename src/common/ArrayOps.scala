@@ -351,7 +351,7 @@ trait CLikeGenArrayOps extends BaseGenArrayOps with CLikeGenBase {
 
 trait CudaGenArrayOps extends CudaGenBase with CLikeGenArrayOps
 trait OpenCLGenArrayOps extends OpenCLGenBase with CLikeGenArrayOps
-trait CGenArrayOps extends CGenBase with CLikeGenArrayOps {
+trait CGenArrayOps extends CGenEffect with CLikeGenArrayOps {
 	val IR: ArrayOpsExp with StructExpOpt with LoweringTransform
   import IR._
 
