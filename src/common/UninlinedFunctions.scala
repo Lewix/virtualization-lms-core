@@ -31,7 +31,7 @@ trait UninlinedFunctions extends Base {
   def uninlinedFuncApply[A1:Manifest,A2:Manifest,B:Manifest](fun: Rep[(A1,A2)=>B], arg: Rep[A1], arg2: Rep[A2])(implicit pos: SourceContext): Rep[B]
 }
 
-trait UninlinedFunctionsExp extends UninlinedFunctions with BaseExp with EffectExp { 
+trait UninlinedFunctionsExp extends UninlinedFunctions with BaseExp with EffectExp with LMSCore { 
   val functionList0 = new scala.collection.mutable.ListBuffer[UninlinedFunc0[_]]()
   val functionList1 = new scala.collection.mutable.ListBuffer[UninlinedFunc1[_,_]]()
   val functionList2 = new scala.collection.mutable.ListBuffer[UninlinedFunc2[_,_,_]]()
@@ -183,7 +183,7 @@ trait ScalaGenUninlinedFunctions extends ScalaGenEffect {
 }
 
 trait CGenUninlinedFunctions extends CGenEffect {
-  val IR: UninlinedFunctionsExp with LoweringTransform
+  val IR: UninlinedFunctionsExp
   import IR._
   
   var emitEnabled: Boolean = false

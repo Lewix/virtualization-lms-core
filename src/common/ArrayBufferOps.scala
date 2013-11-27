@@ -42,7 +42,7 @@ trait ArrayBufferOps extends Base {
   def arraybuffer_toseq[A:Manifest](x: Rep[ArrayBuffer[A]])(implicit pos: SourceContext): Rep[Seq[A]]
 }
 
-trait ArrayBufferOpsExp extends ArrayBufferOps with EffectExp {
+trait ArrayBufferOpsExp extends ArrayBufferOps with EffectExp with LMSCore {
   case class ArrayBufferNew[A:Manifest](xs: Seq[Exp[A]]) extends Def[ArrayBuffer[A]]  {
     val mA = manifest[A]
   }
@@ -107,7 +107,4 @@ trait CLikeGenArrayBufferOps extends BaseGenArrayBufferOps with CLikeGenBase {
 
 trait CudaGenArrayBufferOps extends CudaGenEffect with CLikeGenArrayBufferOps
 trait OpenCLGenArrayBufferOps extends OpenCLGenEffect with CLikeGenArrayBufferOps
-trait CGenArrayBufferOps extends CGenEffect with CLikeGenArrayBufferOps {
-  val IR: ArrayBufferOpsExp with LoweringTransform
-}
-
+trait CGenArrayBufferOps extends CGenEffect with CLikeGenArrayBufferOps

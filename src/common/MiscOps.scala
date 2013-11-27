@@ -25,7 +25,7 @@ trait MiscOps extends Base {
 
 
 
-trait MiscOpsExp extends MiscOps with EffectExp {
+trait MiscOpsExp extends MiscOps with EffectExp with LMSCore {
   case class Print(x: Exp[Any]) extends Def[Unit]
   case class PrintLn(x: Exp[Any]) extends Def[Unit]
   case class PrintF(f: String, x: List[Exp[Any]]) extends Def[Unit]
@@ -72,7 +72,7 @@ trait ScalaGenMiscOps extends ScalaGenEffect {
 
 
 trait CGenMiscOps extends CGenEffect {
-  val IR: MiscOpsExp with LoweringTransform
+  val IR: MiscOpsExp
   import IR._
 
   override def emitNode(sym: Sym[Any], rhs: Def[Any]) = rhs match {

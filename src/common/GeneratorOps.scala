@@ -249,7 +249,7 @@ trait GeneratorOps extends Base with Variables with LiftVariables with IfThenEls
   }
 }
 
-trait GeneratorOpsExp extends GeneratorOps with EffectExp with VariablesExp with IfThenElseExp with EqualExp with TupleOpsExp with ListOpsExp with ObjectOpsExp with StringOpsExp with HashMapOpsExp with ListBufferExp with HashMultiMapOpsExp with SetOpsExp with ArrayOpsExp {
+trait GeneratorOpsExp extends GeneratorOps with EffectExp with VariablesExp with IfThenElseExp with EqualExp with TupleOpsExp with ListOpsExp with ObjectOpsExp with StringOpsExp with HashMapOpsExp with ListBufferExp with HashMultiMapOpsExp with SetOpsExp with ArrayOpsExp with LMSCore {
 
   case class GeneratorContainer[T: Manifest,U:Manifest](gen: Generator[U]) extends Def[T]
   case class TupleGeneratorContainer[T: Manifest,U:Manifest,V:Manifest](gen: TupleGenerator[U,V]) extends Def[T]
@@ -287,7 +287,7 @@ trait ScalaGenGeneratorOps extends ScalaGenVariables
 
 trait CGenGeneratorOps extends CGenVariables
   with CGenIfThenElse with CLikeGenEqual with CLikeGenListOps {
-  val IR: GeneratorOpsExp with LoweringTransform
+  val IR: GeneratorOpsExp
   import IR._
 
   /*override def emitNode(sym: Sym[Any], rhs: Def[Any]) = rhs match {

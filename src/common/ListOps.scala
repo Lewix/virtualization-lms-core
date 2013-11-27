@@ -55,7 +55,7 @@ trait ListOps extends Variables {
   def list_contains[A:Manifest](xs: Rep[List[A]], e: Rep[A])(implicit pos: SourceContext): Rep[Boolean]
 }
 
-trait ListOpsExp extends ListOps with EffectExp with VariablesExp {
+trait ListOpsExp extends ListOps with EffectExp with VariablesExp with LMSCore {
   case class ListNew[A:Manifest](xs: Seq[Rep[A]]) extends Def[List[A]] {
   	val m = manifest[A]
   }
@@ -248,6 +248,4 @@ trait CLikeGenListOps extends BaseGenListOps with CLikeGenBase {
 
 trait CudaGenListOps extends CudaGenEffect with CLikeGenListOps
 trait OpenCLGenListOps extends OpenCLGenEffect with CLikeGenListOps
-trait CGenListOps extends CGenEffect with CLikeGenListOps {
-  val IR: ListOpsExp with LoweringTransform
-}
+trait CGenListOps extends CGenEffect with CLikeGenListOps

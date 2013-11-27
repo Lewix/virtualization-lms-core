@@ -44,7 +44,7 @@ trait MathOps extends Base {
   def math_e(implicit pos: SourceContext): Rep[Double]
 }
 
-trait MathOpsExp extends MathOps with EffectExp {
+trait MathOpsExp extends MathOps with EffectExp with LMSCore {
   case class MathCeil(x: Exp[Double]) extends Def[Double]
   case class MathFloor(x: Exp[Double]) extends Def[Double]
   case class MathExp(x: Exp[Double]) extends Def[Double]
@@ -222,7 +222,7 @@ trait OpenCLGenMathOps extends BaseGenMathOps with OpenCLGenEffect {
 }
 
 trait CGenMathOps extends BaseGenMathOps with CGenEffect {
-  val IR: MathOpsExp with LoweringTransform
+  val IR: MathOpsExp
   import IR._
   
   override def emitNode(sym: Sym[Any], rhs: Def[Any]) = rhs match {

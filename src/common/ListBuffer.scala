@@ -25,7 +25,7 @@ trait ListBuffer extends Base with Expressions with Variables {
     def listBufferforeach[A:Manifest, B:Manifest](x: Rep[mutable.ListBuffer[A]], f: Rep[A] => Rep[B]): Rep[Unit]
 }
 
-trait ListBufferExp extends ListBuffer with BaseExp with EffectExp with Effects {
+trait ListBufferExp extends ListBuffer with BaseExp with EffectExp with Effects with LMSCore {
 	case class ListBufferAdd[A:Manifest](x: Rep[mutable.ListBuffer[A]], v: Rep[Any]) extends Def[Unit]
 	case class ListBufferRemove[A:Manifest](x: Rep[mutable.ListBuffer[A]], v: Rep[Int]) extends Def[A]
 	case class ListBufferSize[A:Manifest](x: Rep[mutable.ListBuffer[A]]) extends Def[Int]
@@ -88,7 +88,7 @@ trait ScalaGenListBuffer extends ScalaGenBase with ScalaNestedCodegen {
 }
 
 trait CGenListBuffer extends CGenBase with CNestedCodegen {
-	val IR: ListBufferExp with LoweringTransform
+	val IR: ListBufferExp
 	import IR._
   
 	override def emitNode(sym: Sym[Any], rhs: Def[Any]) = rhs match {

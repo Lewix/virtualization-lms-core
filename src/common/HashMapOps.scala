@@ -55,7 +55,7 @@ trait HashMapOps extends Base with Variables with TupleOps {
   def hashmap_mkString[K: Manifest, V: Manifest](m: Rep[HashMap[K,V]], v: Rep[String])(implicit pos: SourceContext): Rep[String]
 }
 
-trait HashMapOpsExp extends HashMapOps with EffectExp with TupleOpsExp with UninlinedFunctionsExp with Functions {
+trait HashMapOpsExp extends HashMapOps with EffectExp with TupleOpsExp with UninlinedFunctionsExp with Functions with LMSCore {
   abstract class HashMapDef[K:Manifest,V:Manifest,R:Manifest] extends Def[R] {
     val mK = manifest[K]
     val mV = manifest[V]
@@ -248,6 +248,4 @@ trait CLikeGenHashMapOps extends BaseGenHashMapOps with CLikeCodegen {
 
 trait CudaGenHashMapOps extends CudaGenEffect with CLikeGenHashMapOps
 trait OpenCLGenHashMapOps extends OpenCLGenEffect with CLikeGenHashMapOps
-trait CGenHashMapOps extends CGenEffect with CLikeGenHashMapOps {
-  val IR: HashMapOpsExp with LoweringTransform
-}
+trait CGenHashMapOps extends CGenEffect with CLikeGenHashMapOps

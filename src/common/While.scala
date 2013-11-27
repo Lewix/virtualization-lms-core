@@ -11,7 +11,7 @@ trait While extends Base {
 }
 
 
-trait WhileExp extends While with EffectExp {
+trait WhileExp extends While with EffectExp with LMSCore {
   case class While(cond: Block[Boolean], body: Block[Unit]) extends Def[Unit]
   case class DoWhile(body: Block[Unit], cond: Block[Boolean]) extends Def[Unit]
 
@@ -193,6 +193,4 @@ trait CudaGenWhile extends CudaGenEffect with CLikeGenWhile
 
 trait OpenCLGenWhile extends OpenCLGenEffect with CLikeGenWhile
 
-trait CGenWhile extends CGenEffect with CLikeGenWhile {
-  val IR: WhileExp with LoweringTransform
-}
+trait CGenWhile extends CGenEffect with CLikeGenWhile

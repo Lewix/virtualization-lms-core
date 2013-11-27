@@ -40,7 +40,7 @@ trait SetOps extends Base with Variables {
   def set_empty[T:Manifest]() : Rep[Set[T]]
 }
 
-trait SetOpsExp extends SetOps with ArrayOps with EffectExp {
+trait SetOpsExp extends SetOps with ArrayOps with EffectExp with LMSCore {
   case class SetNew[A:Manifest](xs: Seq[Exp[A]], mA: Manifest[A]) extends Def[Set[A]]
   case class SetContains[A:Manifest](s: Exp[Set[A]], i: Exp[A]) extends Def[Boolean]
   case class SetAdd[A:Manifest](s: Exp[Set[A]], i: Exp[A]) extends Def[Unit]
@@ -156,6 +156,4 @@ trait CLikeGenSetOps extends BaseGenSetOps with CLikeCodegen {
 
 trait CudaGenSetOps extends CudaGenEffect with CLikeGenSetOps
 trait OpenCLGenSetOps extends OpenCLGenEffect with CLikeGenSetOps
-trait CGenSetOps extends CGenEffect with CLikeGenSetOps {
-  val IR: SetOpsExp with LoweringTransform
-}
+trait CGenSetOps extends CGenEffect with CLikeGenSetOps 

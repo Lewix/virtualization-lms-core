@@ -56,7 +56,7 @@ trait ScalaGenUncheckedOps extends ScalaGenBase {
 }
 
 trait CGenUncheckedOps extends CGenBase {
-  val IR: UncheckedOpsExp with LoweringTransform
+  val IR: UncheckedOpsExp
   import IR._
 
   override def emitNode(sym: Sym[Any], rhs: Def[Any]) = rhs match {

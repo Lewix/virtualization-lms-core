@@ -79,7 +79,7 @@ trait Variables extends Base with OverloadHack with VariableImplicits with ReadV
   def infix_/=[T](lhs: Var[T], rhs: Var[T])(implicit o: Overloaded3, mT: Manifest[T], pos: SourceContext) = var_divideequals(lhs,readVar(rhs))
 }
 
-trait VariablesExp extends Variables with ImplicitOpsExp with VariableImplicits with ReadVarImplicitExp {
+trait VariablesExp extends Variables with ImplicitOpsExp with VariableImplicits with ReadVarImplicitExp with LMSCore {
   // REMARK:
   // defining Var[T] as Sym[T] is dangerous. If someone forgets to define a more-specific implicit conversion from
   // Var[T] to Ops, e.g. implicit def varToRepStrOps(s: Var[String]) = new RepStrOpsCls(varToRep(s))
@@ -297,6 +297,4 @@ trait CLikeGenVariables extends CLikeGenBase {
 
 trait CudaGenVariables extends CudaGenEffect with CLikeGenVariables
 trait OpenCLGenVariables extends OpenCLGenEffect with CLikeGenVariables
-trait CGenVariables extends CGenEffect with CLikeGenVariables {
-  val IR: VariablesExp with LoweringTransform
-}
+trait CGenVariables extends CGenEffect with CLikeGenVariables

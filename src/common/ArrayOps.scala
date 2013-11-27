@@ -61,7 +61,7 @@ trait ArrayOps extends Variables {
   def array_corresponds[A: Manifest, B: Manifest](a: Rep[Array[A]], a2: Rep[Array[B]]): Rep[Boolean]
 }
 
-trait ArrayOpsExp extends ArrayOps with EffectExp with VariablesExp {
+trait ArrayOpsExp extends ArrayOps with EffectExp with VariablesExp with LMSCore {
   case class CArrayNew[T:Manifest](n: Exp[Int], specializedType: Rep[String] = unit("")) extends Def[Array[T]] {
     val m = manifest[T]
   }
@@ -352,7 +352,7 @@ trait CLikeGenArrayOps extends BaseGenArrayOps with CLikeGenBase {
 trait CudaGenArrayOps extends CudaGenBase with CLikeGenArrayOps
 trait OpenCLGenArrayOps extends OpenCLGenBase with CLikeGenArrayOps
 trait CGenArrayOps extends CGenEffect with CLikeGenArrayOps {
-	val IR: ArrayOpsExp with StructExpOpt with LoweringTransform
+	val IR: ArrayOpsExp
   import IR._
 
   override def lowerNode(sym: Sym[Any], rhs: Def[Any]) = rhs match {

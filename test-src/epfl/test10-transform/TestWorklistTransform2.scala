@@ -23,41 +23,9 @@ import scala.reflect.SourceContext
 //      vfromarray(data)
 //    }
 
-
-
-trait FWTransform2 extends BaseFatExp with EffectExp with IfThenElseFatExp with LoopsFatExp { self =>
-
-  class MyWorklistTransformer extends WorklistTransformer { val IR: self.type = self }
-
-  // ---------- Exp api
-
-  implicit def toAfter[A:Manifest](x: Def[A]) = new { def atPhase(t: MyWorklistTransformer)(y: => Exp[A]) = transformAtPhase(x)(t)(y) }
-  implicit def toAfter[A](x: Exp[A]) = new { def atPhase(t: MyWorklistTransformer)(y: => Exp[A]) = transformAtPhase(x)(t)(y) }
-
-  // transform x to y at the *next* iteration of t.
-  // note: if t is currently active, it will continue the current pass with x = x.
-  // do we need a variant that replaces x -> y immediately if t is active?
-
-  def transformAtPhase[A](x: Exp[A])(t: MyWorklistTransformer)(y: => Exp[A]): Exp[A] = {
-    t.register(x)(y)
-    x
-  }
-
-
-  def onCreate[A:Manifest](s: Sym[A], d: Def[A]): Exp[A] = s
-
-  // ----------
-
-  override def createDefinition[T](s: Sym[T], d: Def[T]): Stm = {
-    onCreate(s,d)(s.tp)
-    super.createDefinition(s,d)
-  }
-
-}
-
-trait VectorExpTrans2 extends FWTransform2 with VectorExp with ArrayLoopsExp with ArrayMutationExp with ArithExp with OrderingOpsExpOpt with BooleanOpsExp
+trait VectorExpTrans2 extends BaseFatExp with EffectExp with IfThenElseFatExp with LoopsFatExp with VectorExp with ArrayLoopsExp with ArrayMutationExp with ArithExp with OrderingOpsExpOpt with BooleanOpsExp
     with EqualExpOpt with StructExp //with VariablesExpOpt
-    with IfThenElseExpOpt with WhileExpOptSpeculative with RangeOpsExp with PrintExp {
+    with IfThenElseExpOpt with WhileExpOptSpeculative with RangeOpsExp with PrintExp { self =>
 
 
   def vzeros_xform(n: Rep[Int]) = vfromarray(array(n) { i => 0 })
@@ -85,7 +53,7 @@ trait VectorExpTrans2 extends FWTransform2 with VectorExp with ArrayLoopsExp wit
   }).asInstanceOf[Exp[A]]
 
 
-  val xform = new MyWorklistTransformer
+  object xform extends LoweringTransformer
 
   override def vapply[T:Manifest](a: Rep[Vector[T]], x: Rep[Int]) = (a,x) match {
     case (Def(VectorLiteral(ax)), Const(x)) => ax(x)

@@ -25,7 +25,7 @@ trait SeqOps extends Variables {
   def seq_length[T:Manifest](x: Rep[Seq[T]])(implicit pos: SourceContext): Rep[Int]
 }
 
-trait SeqOpsExp extends SeqOps with EffectExp {
+trait SeqOpsExp extends SeqOps with EffectExp with LMSCore {
   case class SeqNew[A:Manifest](xs: List[Rep[A]]) extends Def[Seq[A]]
   case class SeqLength[T:Manifest](a: Exp[Seq[T]]) extends Def[Int]
   case class SeqApply[T:Manifest](x: Exp[Seq[T]], n: Exp[Int]) extends Def[T]
@@ -82,6 +82,4 @@ trait CLikeGenSeqOps extends BaseGenSeqOps with CLikeGenBase  {
 
 trait CudaGenSeqOps extends CudaGenEffect with CLikeGenSeqOps
 trait OpenCLGenSeqOps extends OpenCLGenEffect with CLikeGenSeqOps
-trait CGenSeqOps extends CGenEffect with CLikeGenSeqOps {
-  val IR: SeqOpsExp with LoweringTransform
-}
+trait CGenSeqOps extends CGenEffect with CLikeGenSeqOps

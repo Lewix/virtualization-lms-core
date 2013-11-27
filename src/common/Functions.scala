@@ -62,7 +62,7 @@ trait TupledFunctions extends Functions with TupleOps {
     new LambdaOps5(fun)
 }
 
-trait FunctionsExp extends Functions with EffectExp {
+trait FunctionsExp extends Functions with EffectExp with LMSCore {
   case class Lambda[A:Manifest,B:Manifest](f: Exp[A] => Exp[B], x: Exp[A], y: Block[B]) extends Def[A => B] { val mA = manifest[A]; val mB = manifest[B] }
   case class Apply[A:Manifest,B:Manifest](f: Exp[A => B], arg: Exp[A]) extends Def[B]
 
@@ -354,7 +354,7 @@ trait OpenCLGenFunctions extends OpenCLGenEffect with BaseGenFunctions {
 }
 
 trait CGenFunctions extends CGenEffect with BaseGenFunctions {
-  val IR: FunctionsExp with LoweringTransform
+  val IR: FunctionsExp
   import IR._
 
   override def emitNode(sym: Sym[Any], rhs: Def[Any]) = rhs match {
@@ -372,7 +372,7 @@ trait CGenFunctions extends CGenEffect with BaseGenFunctions {
 }
 
 trait CGenTupledFunctions extends CGenFunctions with GenericGenUnboxedTupleAccess {
-  val IR: TupledFunctionsExp with LoweringTransform
+  val IR: TupledFunctionsExp
   import IR._
 
   /*override def quote(x: Exp[Any]) : String = x match {

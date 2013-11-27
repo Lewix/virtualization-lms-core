@@ -504,8 +504,7 @@ trait GenericNestedCodegen extends NestedBlockTraversal with GenericCodegen { se
 
   def lowerNode(sym: Sym[Any], rhs: Def[Any]): Unit = {
     rhs match {
-      case Reflect(s, u, effects) =>
-        lowerNode(sym, s)
+      case Reflect(s, u, effects) => lowerNode(sym, s)
       case _ => ()
     }
   }

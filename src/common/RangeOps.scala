@@ -26,7 +26,7 @@ trait RangeOps extends Base {
   def range_foreach(r: Rep[Range], f: (Rep[Int]) => Rep[Unit])(implicit pos: SourceContext): Rep[Unit]
 }
 
-trait RangeOpsExp extends RangeOps with FunctionsExp {
+trait RangeOpsExp extends RangeOps with FunctionsExp with LMSCore {
   case class Until(start: Exp[Int], end: Exp[Int]) extends Def[Range]
   case class RangeStart(r: Exp[Range]) extends Def[Int]
   case class RangeStep(r: Exp[Range]) extends Def[Int]
@@ -159,7 +159,7 @@ trait OpenCLGenRangeOps extends OpenCLGenEffect with BaseGenRangeOps {
 }
 
 trait CGenRangeOps extends CGenEffect with BaseGenRangeOps {
-  val IR: RangeOpsExp with LoweringTransform
+  val IR: RangeOpsExp
   import IR._
 
   override def emitNode(sym: Sym[Any], rhs: Def[Any]) = rhs match {

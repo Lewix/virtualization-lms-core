@@ -16,7 +16,7 @@ trait SynchronizedArrayBufferOps extends ArrayBufferOps {
 
 }
 
-trait SynchronizedArrayBufferOpsExp extends SynchronizedArrayBufferOps with ArrayBufferOpsExp {
+trait SynchronizedArrayBufferOpsExp extends SynchronizedArrayBufferOps with ArrayBufferOpsExp with LMSCore {
   case class SyncArrayBufferNew[A:Manifest](xs: Seq[Exp[A]]) extends Def[ArrayBuffer[A]]  {
     val mA = manifest[A]
   }
@@ -54,7 +54,5 @@ trait CLikeGenSynchronizedArrayBufferOps extends BaseGenSynchronizedArrayBufferO
 
 trait CudaGenSynchronizedArrayBufferOps extends CudaGenEffect with CLikeGenSynchronizedArrayBufferOps
 trait OpenCLGenSynchronizedArrayBufferOps extends OpenCLGenEffect with CLikeGenSynchronizedArrayBufferOps
-trait CGenSynchronizedArrayBufferOps extends CGenEffect with CLikeGenSynchronizedArrayBufferOps {
-  val IR: SynchronizedArrayBufferOpsExp with LoweringTransform
-}
+trait CGenSynchronizedArrayBufferOps extends CGenEffect with CLikeGenSynchronizedArrayBufferOps
 

@@ -114,3 +114,7 @@ trait OpenCLGenFat extends OpenCLFatCodegen with OpenCLGenBase
 trait CGenBase extends CCodegen
 trait CGenEffect extends CNestedCodegen with CGenBase
 trait CGenFat extends CFatCodegen with CGenBase
+
+// In practice everything is nested and fat, so put all of this
+// in a LMSCore trait
+trait LMSCore extends LoweringTransform with StructExpOpt

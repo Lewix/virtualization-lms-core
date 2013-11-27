@@ -27,27 +27,7 @@ import scala.reflect.SourceContext
 
 trait FWTransform1 extends BaseFatExp with EffectExp with IfThenElseFatExp with LoopsFatExp { self =>
 
-  class MyWorklistTransformer extends WorklistTransformer { val IR: self.type = self }
-
-  def xform: MyWorklistTransformer
-
-
-  // ---------- Exp api
-
-  implicit def toAfter[A:Manifest](x: Def[A]) = new { def atPhase(t: MyWorklistTransformer)(y: => Exp[A]) = transformAtPhase(x)(t)(y) }
-  implicit def toAfter[A](x: Exp[A]) = new { def atPhase(t: MyWorklistTransformer)(y: => Exp[A]) = transformAtPhase(x)(t)(y) }
-
-  // transform x to y at the *next* iteration of t.
-  // note: if t is currently active, it will continue the current pass with x = x.
-  // do we need a variant that replaces x -> y immediately if t is active?
-
-  def transformAtPhase[A](x: Exp[A])(t: MyWorklistTransformer)(y: => Exp[A]): Exp[A] = {
-    t.register(x)(y)
-    x
-  }
-
-
-  // ----------
+  object xform extends LoweringTransformer
 
   // we need to apply the current substitution to each Def we create:
   // Foo(x) atPhase(t) { bar(x) }   <--- x in bar(x)  will refer to a sym that may have been replaced itself
@@ -68,7 +48,7 @@ trait FWTransform1 extends BaseFatExp with EffectExp with IfThenElseFatExp with 
 
 trait VectorExpTrans1 extends FWTransform1 with VectorExp with ArrayLoopsExp with ArrayMutationExp with ArithExp with OrderingOpsExpOpt with BooleanOpsExp
     with EqualExpOpt with StructExp //with VariablesExpOpt
-    with IfThenElseExpOpt with WhileExpOptSpeculative with RangeOpsExp with PrintExp {
+    with IfThenElseExpOpt with WhileExpOptSpeculative with RangeOpsExp with PrintExp { self =>
 
 
   // TODO: this is not very modular. should it be more modular?
@@ -130,10 +110,6 @@ trait VectorExpTrans1 extends FWTransform1 with VectorExp with ArrayLoopsExp wit
       field[Int](a, "length")
 //    }
   }
-
-
-  val xform = new MyWorklistTransformer
-
 }
 
 

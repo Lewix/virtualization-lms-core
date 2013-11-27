@@ -353,16 +353,16 @@ trait TupleOps extends Base {
   def listToTuple(y: List[Rep[Any]]): Rep[Product]
 }
 
-trait TupleOpsExp extends TupleOps with EffectExp with LoweringTransform with StructExpOpt {
-  val tuple_elems: Seq[String] = List("_1", "_2")
+trait TupleOpsExp extends TupleOps with EffectExp with LMSCore {
+  val tuple_elems: Seq[String] = List("_1", "_2", "_3")
 
   implicit def make_tuple2[A1:Manifest,A2:Manifest](t: (Exp[A1],Exp[A2]))(implicit pos: SourceContext) : Exp[(A1,A2)] =
     (ETuple2(t._1, t._2)).atPhase(HIRLowering) {
-      struct(classTag[(A1,A2)], tuple_elems(0) -> t._1, tuple_elems(1) -> t._2)
+      struct(classTag[(A1,A2)], tuple_elems(0) -> HIRLowering(t)._1, tuple_elems(1) -> HIRLowering(t)._2)
     }
   implicit def make_tuple3[A1:Manifest,A2:Manifest,A3:Manifest](t: (Exp[A1],Exp[A2],Exp[A3]))(implicit pos: SourceContext) : Exp[(A1,A2,A3)] =
     (ETuple3(t._1, t._2, t._3)).atPhase(HIRLowering) {
-      struct(classTag[(A1,A2,A3)], tuple_elems(0) -> t._1, tuple_elems(1) -> t._2, tuple_elems(2) -> t._3)
+      struct(classTag[(A1,A2,A3)], tuple_elems(0) -> HIRLowering(t)._1, tuple_elems(1) -> HIRLowering(t)._2, tuple_elems(2) -> HIRLowering(t)._3)
     }
   implicit def make_tuple4[A1:Manifest,A2:Manifest,A3:Manifest,A4:Manifest](t: (Exp[A1],Exp[A2],Exp[A3],Exp[A4]))(implicit pos: SourceContext) : Exp[(A1,A2,A3,A4)] = ETuple4(t._1, t._2, t._3, t._4)
   implicit def make_tuple5[A1:Manifest,A2:Manifest,A3:Manifest,A4:Manifest,A5:Manifest](t: (Exp[A1],Exp[A2],Exp[A3],Exp[A4],Exp[A5]))(implicit pos: SourceContext) : Exp[(A1,A2,A3,A4,A5)] = ETuple5(t._1, t._2, t._3, t._4, t._5)
@@ -952,19 +952,18 @@ trait TupleOpsExp extends TupleOps with EffectExp with LoweringTransform with St
   case class Tuple22Access21[A21:Manifest](t: Exp[(_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,A21,_)]) extends Def[A21] { val m = manifest[A21] }
   case class Tuple22Access22[A22:Manifest](t: Exp[(_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,A22)]) extends Def[A22] { val m = manifest[A22] }
 
-
   def tuple2_get1[A1:Manifest](t: Exp[(A1,_)])(implicit pos: SourceContext) = t match {
     case Def(ETuple2(a1,a2)) => a1
     case _ =>
       Tuple2Access1(t).atPhase(HIRLowering) {
-        field[A1](t, tuple_elems(0))
+        field[A1](HIRLowering(t), tuple_elems(0))
       }
   }
   def tuple2_get2[A2:Manifest](t: Exp[(_,A2)])(implicit pos: SourceContext) = t match {
     case Def(ETuple2(a1,a2)) => a2
     case _ =>
       Tuple2Access2(t).atPhase(HIRLowering) {
-        field[A2](t, tuple_elems(1))
+        field[A2](HIRLowering(t), tuple_elems(1))
       }
   }
 
@@ -972,21 +971,21 @@ trait TupleOpsExp extends TupleOps with EffectExp with LoweringTransform with St
     case Def(ETuple3(a1,a2,a3)) => a1
     case _ =>
       Tuple3Access1(t).atPhase(HIRLowering) {
-        field[A1](t, tuple_elems(0))
+        field[A1](HIRLowering(t), tuple_elems(0))
       }
   }
   def tuple3_get2[A2:Manifest](t: Exp[(_,A2,_)])(implicit pos: SourceContext) = t match {
     case Def(ETuple3(a1,a2,a3)) => a2
     case _ =>
       Tuple3Access2(t).atPhase(HIRLowering) {
-        field[A2](t, tuple_elems(1))
+        field[A2](HIRLowering(t), tuple_elems(1))
       }
   }
   def tuple3_get3[A3:Manifest](t: Exp[(_,_,A3)])(implicit pos: SourceContext) = t match {
     case Def(ETuple3(a1,a2,a3)) => a3
     case _ =>
       Tuple3Access3(t).atPhase(HIRLowering) {
-        field[A3](t, tuple_elems(2))
+        field[A3](HIRLowering(t), tuple_elems(2))
       }
   }
 
