@@ -4,6 +4,7 @@ package internal
 import util.GraphUtil
 import java.io.{File, PrintWriter}
 import scala.reflect.RefinedManifest
+import scala.reflect.SourceContext
 import scala.collection.mutable.{Map => MMap}
 
 trait GenericCodegen extends BlockTraversal {
@@ -496,13 +497,14 @@ trait GenericNestedCodegen extends NestedBlockTraversal with GenericCodegen { se
   trait LIRLoweringTraversal extends NestedBlockTraversal {
     val IR: self.IR.type = self.IR
     import IR._
+
     override def traverseStm(stm: Stm): Unit = stm match {
-        case TP(sym, rhs) => lowerNode(sym, rhs)
+        case TP(sym, rhs) => lowerNode(sym, rhs)(sym.tp)
         case _ => throw new GenerationFailedException(s"don't know how to generate code for statement: $stm")
     }
   }
 
-  def lowerNode(sym: Sym[Any], rhs: Def[Any]): Unit = {
+  def lowerNode[T:Manifest](sym: Sym[T], rhs: Def[T]): Unit = {
     rhs match {
       case Reflect(s, u, effects) => lowerNode(sym, s)
       case _ => ()

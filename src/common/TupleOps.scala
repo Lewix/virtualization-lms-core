@@ -2885,7 +2885,7 @@ trait ScalaGenTupleOps extends ScalaGenBase {
   }
 }
 
-trait CGenTupleOps extends CGenBase with CGenStruct {
+trait CGenTupleOps extends CGenEffect with CGenStruct {
   val IR: TupleOpsExp
   import IR._
   override def emitNode(sym: Sym[Any], rhs: Def[Any]) = rhs match {
@@ -2904,6 +2904,6 @@ trait CGenTupleOps extends CGenBase with CGenStruct {
   	  val elems = IR.tuple_elems.take(2) zip m.typeArguments
   	  registerType(m, Map(elems: _*))
   	  s"struct ${structName(m)}*"
-  	case _ => super[CGenStruct].remap(m)
+  	case _ => super.remap(m)
   }
 }

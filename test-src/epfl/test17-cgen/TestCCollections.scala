@@ -32,7 +32,6 @@ class TestCCollections extends FileDiffSuite {
       rec.foreach { case (k,x) =>
         val stream = new PrintWriter(System.out)
         stream.println("/* FILE: " + x.name + ".c */")
-        for ((_,v) <- rec) codegen.emitForwardDef(mtype(v.mA)::Nil, v.name, stream)(mtype(v.mB))
         codegen.emitSource1(x.f, x.name, stream)(mtype(x.mA), mtype(x.mB))
       }
     }
@@ -68,6 +67,17 @@ class TestCCollections extends FileDiffSuite {
           val a = array_obj_new[Int](unit(5))
           array_update(a, 1, array_length(a))
           a
+        }
+      }
+      new Prog with Impl
+    }
+  }
+
+  it("testCArrayAccess") {
+    withOutFileChecked(prefix+"carrays2") {
+      trait Prog extends DSL {
+        toplevel("main") { x: Rep[Array[Int]] =>
+          array_apply(x, 1) + array_length(x)
         }
       }
       new Prog with Impl

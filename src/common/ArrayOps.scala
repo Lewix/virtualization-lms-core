@@ -62,10 +62,13 @@ trait ArrayOps extends Variables {
 }
 
 trait ArrayOpsExp extends ArrayOps with EffectExp with VariablesExp with LMSCore {
-  case class CArrayNew[T:Manifest](n: Exp[Int], specializedType: Rep[String] = unit("")) extends Def[Array[T]] {
+  class CArray[T]
+
+  case class CArrayNew[T:Manifest](n: Exp[Int], specializedType: Rep[String] = unit("")) extends Def[CArray[T]] {
     val m = manifest[T]
   }
-  case class CArrayUpdate[T:Manifest](a: Exp[Array[T]], n: Exp[Int], y: Exp[T]) extends Def[Unit]
+  case class CArrayUpdate[T:Manifest](a: Exp[CArray[T]], n: Exp[Int], y: Exp[T]) extends Def[Unit]
+  case class CArrayApply[T:Manifest](a: Exp[CArray[T]], n: Exp[Int]) extends Def[T]
   case class ArrayNew[T:Manifest](n: Exp[Int], specializedType: Rep[String] = unit("")) extends Def[Array[T]] {
     val m = manifest[T]
   }
@@ -96,7 +99,8 @@ trait ArrayOpsExp extends ArrayOps with EffectExp with VariablesExp with LMSCore
   case class ArrayCorresponds[A:Manifest, B: Manifest](x: Exp[Array[A]], x2: Exp[Array[B]]) extends Def[Boolean]
   
   def carray_obj_new[T:Manifest](n: Exp[Int], specializedType: Rep[String] = unit("")) = reflectMutable(CArrayNew(n, specializedType))
-  def carray_update[T:Manifest](x: Exp[Array[T]], n: Exp[Int], y: Exp[T])(implicit pos: SourceContext) = reflectWrite(x)(CArrayUpdate(x,n,y))
+  def carray_apply[T:Manifest](x: Exp[CArray[T]], n: Exp[Int])(implicit pos: SourceContext): Exp[T] = CArrayApply(x, n)
+  def carray_update[T:Manifest](x: Exp[CArray[T]], n: Exp[Int], y: Exp[T])(implicit pos: SourceContext) = reflectWrite(x)(CArrayUpdate(x,n,y))
   def array_obj_new[T:Manifest](n: Exp[Int], specializedType: Rep[String] = unit("")) = reflectMutable(ArrayNew(n, specializedType))
   def array_obj_fromseq[T:Manifest](xs: Seq[T]) = /*reflectMutable(*/ ArrayFromSeq(xs) /*)*/
   def array_apply[T:Manifest](x: Exp[Array[T]], n: Exp[Int])(implicit pos: SourceContext): Exp[T] = ArrayApply(x, n)
@@ -351,21 +355,27 @@ trait CLikeGenArrayOps extends BaseGenArrayOps with CLikeGenBase {
 
 trait CudaGenArrayOps extends CudaGenBase with CLikeGenArrayOps
 trait OpenCLGenArrayOps extends OpenCLGenBase with CLikeGenArrayOps
-trait CGenArrayOps extends CGenEffect with CLikeGenArrayOps {
+trait CGenArrayOps extends CGenEffect with CLikeGenArrayOps with CGenStruct {
 	val IR: ArrayOpsExp
   import IR._
 
-  override def lowerNode(sym: Sym[Any], rhs: Def[Any]) = rhs match {
-    case a@ArrayNew(n, sType) =>
+  //TODO: remove pos, it isn't used
+  override def lowerNode[T:Manifest](sym: Sym[T], rhs: Def[T]) = rhs match {
+    case ArrayNew(n, sType) =>
       sym.atPhase(CCodegenLowering) {
-        struct(classTag(a.m),
-               "array" -> carray_obj_new(n, sType)(a.m),
+        struct(classTag(sym.tp),
+               "array" -> carray_obj_new(n, sType)(sym.tp.typeArguments.head),
                "length" -> n)
+      }
+    case ArrayApply(a, n) =>
+      sym.atPhase(CCodegenLowering) {
+        val ca = field[CArray[T]](CCodegenLowering(a), "array")
+        carray_apply(ca, CCodegenLowering(n))
       }
     case ArrayUpdate(a, n, y) =>
       sym.atPhase(CCodegenLowering) {
-      	val ca = field(CCodegenLowering(a), "array")
-      	carray_update(ca, CCodegenLowering(n), CCodegenLowering(y))
+      	val ca = field[CArray[Any]](CCodegenLowering(a), "array")
+      	carray_update(ca, CCodegenLowering(n), CCodegenLowering(y)).asInstanceOf[Exp[T]]
       }
     case ArrayLength(a) =>
       sym.atPhase(CCodegenLowering) {
@@ -374,18 +384,44 @@ trait CGenArrayOps extends CGenEffect with CLikeGenArrayOps {
     case _ => super.lowerNode(sym, rhs)
   }
   
-  //TODO: C array apply
   override def emitNode(sym: Sym[Any], rhs: Def[Any]) = {
     rhs match {
       case a@CArrayNew(n, sType) =>
-        println(s"CArrayNew manifest: ${a.m}")
         val tp =
           if (quote(sType) == "\"\"") remap(a.m)
           else remapInternal(quote(sType).replaceAll("\"",""))
         gen"$tp* $sym = ($tp*)malloc($n * sizeof($tp));"
-      case CArrayUpdate(ca, n, y) =>
-        emitValDef(sym, src"$ca[$n] = $y;")
+      case CArrayApply(ca, n) => emitValDef(sym, src"$ca[$n]")
+      case CArrayUpdate(ca, n, y) => emitValDef(sym, src"$ca[$n] = $y")
       case _ => super.emitNode(sym, rhs)
     }
+  }
+
+  object ArrayManifest {
+    def unapply[A](m: Manifest[A]) =
+      if (!m.runtimeClass.isArray) None
+      else Some(m.typeArguments(0))
+  }
+  object CArrayManifest {
+    def unapply[A](m: Manifest[A]) =
+      if (m.runtimeClass != classOf[CArray[_]]) None
+      else Some(m.typeArguments(0))
+  }
+
+  override def structName[A](m: Manifest[A]) = m match {
+  	case ArrayManifest(typeArg) => s"array${structName(typeArg)}"
+    case CArrayManifest(typeArg) => src"$typeArg*"
+  	case _ => super.structName(m)
+  }
+
+  def wrapCArray[T:Manifest] = manifest[CArray[T]]
+
+  override def remap[A](m: Manifest[A]) = m match {
+    case ArrayManifest(typeArg) => 
+      registerType(m, Map("array" -> wrapCArray(typeArg),
+                          "length" -> manifest[Int]))
+      s"struct ${structName(m)}*"
+    case CArrayManifest(typeArg) => src"$typeArg*"
+    case _ => super.remap(m)
   }
 }
