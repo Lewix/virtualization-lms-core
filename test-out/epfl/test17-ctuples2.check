@@ -1,0 +1,22 @@
+/* FILE: main.c */
+/*****************************************
+  Emitting C Generated Code                  
+*******************************************/
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdbool.h>
+#include <glib.h>
+struct tuple2intint{
+int _1;
+int _2;
+};
+int main(struct tuple2intint* x0) {
+int x4 = x0->_1;
+int x5 = x0->_2;
+int x6 = x4 + x5;
+return x6;
+}
+
+/*****************************************
+  End of C Generated Code                  
+*******************************************/

@@ -1,0 +1,24 @@
+/* FILE: main.c */
+/*****************************************
+  Emitting C Generated Code                  
+*******************************************/
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdbool.h>
+#include <glib.h>
+struct arrayint{
+int* array;
+int length;
+};
+struct arrayint* main(int x0) {
+int* x5 = (int*)malloc(5 * sizeof(int));
+struct arrayint* x6 = (struct arrayint*)malloc(sizeof(struct arrayint));
+x6->array = x5;
+x6->length = 5;
+x5[1] = 5; // x7
+return x6;
+}
+
+/*****************************************
+  End of C Generated Code                  
+*******************************************/

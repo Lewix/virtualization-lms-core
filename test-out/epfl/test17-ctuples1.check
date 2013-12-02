@@ -1,0 +1,23 @@
+/* FILE: main.c */
+/*****************************************
+  Emitting C Generated Code                  
+*******************************************/
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdbool.h>
+#include <glib.h>
+struct tuple2intint{
+int _1;
+int _2;
+};
+struct tuple2intint* main(int x0) {
+int x1 = x0 + 1;
+struct tuple2intint* x3 = (struct tuple2intint*)malloc(sizeof(struct tuple2intint));
+x3->_1 = x0;
+x3->_2 = x1;
+return x3;
+}
+
+/*****************************************
+  End of C Generated Code                  
+*******************************************/

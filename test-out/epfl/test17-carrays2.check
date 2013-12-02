@@ -1,0 +1,23 @@
+/* FILE: main.c */
+/*****************************************
+  Emitting C Generated Code                  
+*******************************************/
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdbool.h>
+#include <glib.h>
+struct arrayint{
+int* array;
+int length;
+};
+int main(struct arrayint* x0) {
+int* x4 = x0->array;
+int x5 = x4[1];
+int x6 = x0->length;
+int x7 = x5 + x6;
+return x7;
+}
+
+/*****************************************
+  End of C Generated Code                  
+*******************************************/
